@@ -4,8 +4,7 @@ import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 const Login = () => {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const navigate = useNavigate(); //da usare una volta collegato a be dopo login per portarlo al manager.jsx dove vede gli user con le card
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,27 +16,43 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    setError(false);
+    setError("");
+
+    const { username, password } = loginData;
+
+    if (!username) {
+      setError("Per favore, inserisci lo username");
+      return;
+    }
+
+    if (!password) {
+      setError("Per favore, inserisci la password");
+      return;
+    }
+    if (password.length < 6) {
+      setError("La password deve avere almeno 6 caratteri.");
+      return;
+    }
+
     setLoading(true);
 
     setTimeout(() => {
-      // Da collegare a backend, lo faccio in intellij?
+      setLoading(false);
+      // da collegare al be, lo faccio con intellij???
+      console.log("Login effettuato con:", loginData);
     }, 1000);
   };
 
   return (
-    <Container className="container-fluid d-flex">
+    <Container className="container-fluid d-flex justify-content-center mt-5">
       <Row>
-        <Col
-          col-12
-          className="d-flex justify-content-center"
-        >
+        <Col md={12}>
           <Form onSubmit={handleLogin}>
             <Form.Group
               controlId="formUsername"
               className="mb-3"
             >
-              <Form.Label style={{ marginRight: "10px" }}>Username</Form.Label>
+              <Form.Label>Username</Form.Label>
               <Form.Control
                 type="text"
                 name="username"
@@ -52,7 +67,7 @@ const Login = () => {
               controlId="formPassword"
               className="mb-3"
             >
-              <Form.Label style={{ marginRight: "10px" }}>Password</Form.Label>
+              <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
                 name="password"
@@ -66,21 +81,21 @@ const Login = () => {
             <Button
               variant="primary"
               type="submit"
-              className="w-100 mt-3"
+              className="w-100"
               disabled={loading}
             >
               {loading ? "Accesso in corso..." : "Login"}
             </Button>
-          </Form>
 
-          {error && (
-            <Alert
-              variant="danger"
-              className="mt-3"
-            >
-              {error}
-            </Alert>
-          )}
+            {error && (
+              <Alert
+                variant="danger"
+                className="mt-3"
+              >
+                {error}
+              </Alert>
+            )}
+          </Form>
         </Col>
       </Row>
     </Container>
