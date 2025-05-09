@@ -5,6 +5,7 @@ const Login = () => {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const navigate = useNavigate(); //da usare una volta collegato a be dopo login per portarlo al manager.jsx dove vede gli user con le card
 
   const handleChange = (e) => {
     const { name, value } = e.target;
