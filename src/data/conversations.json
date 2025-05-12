@@ -132,5 +132,68 @@
     "created": "2025-05-11T20:26:46.355Z",
     "lastActivity": "2025-05-12T07:52:00.791Z",
     "status": "active"
+  },
+  "whatsapp:+393349517320": {
+    "name": "Patricia",
+    "phone": "whatsapp:+393349517320",
+    "messages": [
+      {
+        "direction": "received",
+        "content": "prova",
+        "timestamp": "2025-05-12T21:15:11.378Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Sono pronto a fare una prova. Dimmi cosa vuoi testare. Ad esempio, posso aiutarti con:\n\n*   **Domande a risposta aperta:** Puoi farmi una domanda e valuterò la mia capacità di rispondere in modo completo e informativo.\n*   **Comprensione del testo:** Puoi darmi un testo da leggere e farmi domande in merito.\n*   **Generazione di testo:** Puoi chiedermi di scrivere un testo di un certo tipo (es. una poesia, un articolo, un riassunto).\n*   **Traduzione:** Puoi chiedermi di tradurre un testo da una lingua all'altra.\n*   **Risoluzione di problemi:** Puoi chiedermi di risolvere un problema logico o matematico.\n*   **Creatività:** Puoi chiedermi di inventare una storia, un personaggio o una situazione.\n*   **Coding:** Puoi chiedermi di scrivere un frammento di codice in un linguaggio specifico (Python, Javascript, ecc.).\n\nDimmi pure cosa hai in mente! 😊\n",
+        "timestamp": "2025-05-12T21:15:13.094Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "finalmente funzioni!",
+        "timestamp": "2025-05-12T21:15:27.349Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Sono contento di sentirlo! Cosa è finalmente funzionato? Fammi sapere, così posso capire meglio la situazione e magari aiutarti ulteriormente. 🎉\n",
+        "timestamp": "2025-05-12T21:15:28.001Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "riproviamo",
+        "timestamp": "2025-05-12T21:28:45.634Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ok, dimmi pure cosa vorresti riprovare. Sono qui per aiutarti. Hai bisogno di:\n\n*   **Aiuto con un problema specifico?** (Es. \"Riprovo a risolvere questo esercizio di matematica\")\n*   **Un consiglio su come affrontare un compito?** (Es. \"Riprovo a scrivere una email formale, ma non so come iniziare\")\n*   **Riprovare un'interazione precedente?** (Es. \"Riprovo a spiegarti il concetto di X\")\n*   **Altro?**\n\nPiù dettagli mi dai, meglio posso aiutarti.",
+        "timestamp": "2025-05-12T21:28:46.904Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "vorrei provare la funzione di inattività ma ho sonno",
+        "timestamp": "2025-05-12T22:27:58.875Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Capisco perfettamente! La funzione di inattività serve proprio a prendersi una pausa. Se hai sonno, è il momento perfetto per provarla. Ecco come puoi fare e cosa aspettarti:\n\n**Come attivare la funzione di inattività (dipende dalla piattaforma che stai usando):**\n\n*   **Discord:** Puoi impostare uno stato personalizzato che indichi che sei \"AFK\" o che stai dormendo.\n*   **Slack:** Di solito, Slack imposta automaticamente il tuo stato su \"Away\" dopo un periodo di inattività. Puoi anche impostare manualmente uno stato.\n*   **Altre piattaforme (es. Microsoft Teams, ecc.):** Cerca un'opzione come \"Imposta stato\" o \"Disponibilità\" e scegli un'opzione come \"Non disponibile\" o \"Assente\".\n\n**Cosa succede quando sei inattivo:**\n\n*   **Notifiche silenziate (di solito):** Molte piattaforme ti permettono di silenziare le notifiche quando sei inattivo, così non vieni disturbato.\n*   **Stato visualizzato agli altri:** I tuoi contatti vedranno che sei inattivo, quindi sapranno di non aspettarsi una risposta immediata.\n*   **Nessun obbligo di rispondere:** La cosa più importante è che ti puoi rilassare e dormire senza sentirti in colpa di non rispondere ai messaggi.\n\n**Il mio consiglio:**\n\n1.  **Imposta il tuo stato su \"Non disponibile\" o qualcosa di simile.**\n2.  **Silenzia le notifiche.**\n3.  **Metti via il telefono o il computer.**\n4.  **Dormi sereno!**\n\nLa funzione di inattività è lì per aiutarti a staccare la spina. Approfittane e goditi il tuo riposo! Spero che tu faccia un bel sonno.\n",
+        "timestamp": "2025-05-12T22:28:02.422Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "lol",
+        "timestamp": "2025-05-12T22:28:14.441Z"
+      },
+      {
+        "direction": "sent",
+        "content": "\"lol\" is an internet acronym for \"laughing out loud\" or sometimes \"lots of laughs.\" It's a common way to express amusement or to indicate that something is funny. Is there anything else I can help you with?\n",
+        "timestamp": "2025-05-12T22:28:15.218Z",
+        "automatic": false
+      }
+    ],
+    "created": "2025-05-12T21:15:11.377Z",
+    "lastActivity": "2025-05-12T22:28:14.441Z"
   }
 }

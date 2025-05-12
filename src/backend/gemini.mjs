@@ -1,20 +1,30 @@
-import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import readline from "readline";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Carica le variabili d'ambiente dal file .env
+dotenv.config({ path: path.join(__dirname, "../../.env") });
+console.log("API KEY:", process.env.GEMINI_API_KEY);
+
+const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function generateAIResponse(prompt) {
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    });
-    console.log("Risposta Gemini:", response.text);
-    return response.text;
+    console.log("Prompt inviato a Gemini:", prompt);
+    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+
+    // Inizializza la variabile text correttamente prima di usarla
+    const text = await response.text();
+
+    console.log("Risposta Gemini:", text);
+    return text;
   } catch (error) {
     console.error("Errore nella generazione della risposta:", error);
     return "Mi dispiace, si è verificato un errore nella generazione della risposta.";
@@ -38,7 +48,8 @@ async function main() {
         return;
       }
 
-      await generateAIResponse(prompt);
+      const response = await generateAIResponse(prompt);
+      console.log("Risposta del bot:", response); // Aggiungi questo per stampare la risposta
       askQuestion();
     });
   };
