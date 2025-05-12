@@ -1,0 +1,136 @@
+{
+  "whatsapp:+393395093305": {
+    "name": "Fra",
+    "phone": "whatsapp:+393395093305",
+    "messages": [
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-11T20:26:46.355Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Grazie per il tuo messaggio! Un operatore ti risponderà a breve.",
+        "timestamp": "2025-05-11T20:26:46.357Z",
+        "automatic": true
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:08:05.845Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:12:14.459Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:25:29.047Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Come posso aiutarti oggi? 😊\n",
+        "timestamp": "2025-05-12T07:25:29.645Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Spiegami come funziona un semplice bonifico",
+        "timestamp": "2025-05-12T07:25:48.803Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Certo, ti spiego come funziona un semplice bonifico in modo chiaro e semplice:\n\n**Cos'è un bonifico?**\n\nUn bonifico bancario è un trasferimento di denaro da un conto corrente bancario a un altro. È uno dei modi più comuni per inviare e ricevere denaro, sia a livello nazionale che internazionale.\n\n**Come funziona un bonifico?**\n\n1.  **Chi invia (Ordinante):** La persona o l'entità che vuole inviare denaro è chiamata \"ordinante\". L'ordinante ha un conto corrente presso una banca.\n2.  **Chi riceve (Beneficiario):** La persona o l'entità che riceverà il denaro è chiamata \"beneficiario\". Anche il beneficiario ha un conto corrente presso una banca.\n3.  **Dati necessari:** L'ordinante deve fornire alla sua banca i seguenti dati del beneficiario:\n    *   **Nome e cognome (o ragione sociale, se si tratta di un'azienda):** Il nome completo della persona o dell'azienda che riceverà il denaro.\n    *   **IBAN (International Bank Account Number):** Un codice alfanumerico che identifica univocamente il conto corrente del beneficiario. È essenziale per il trasferimento.\n    *   **Nome della banca del beneficiario (facoltativo, ma consigliato):** Aiuta la banca dell'ordinante a indirizzare correttamente il bonifico.\n    *   **Importo:** La somma di denaro da trasferire.\n    *   **Causale (opzionale, ma consigliato):** Una breve descrizione del motivo del bonifico (es. \"Affitto di marzo\", \"Rimborso spese\", \"Regalo di compleanno\").\n4.  **Disposizione del bonifico:** L'ordinante può disporre il bonifico in diversi modi:\n    *   **Online Banking:** Tramite il sito web o l'app della propria banca. È il metodo più comodo e veloce.\n    *   **Sportello bancario:** Recandosi fisicamente allo sportello della propria banca e compilando un modulo.\n    *   **Telefono:** Contattando telefonicamente il servizio clienti della propria banca (se previsto).\n5.  **Esecuzione del bonifico:** La banca dell'ordinante preleva l'importo specificato dal conto dell'ordinante e lo trasferisce alla banca del beneficiario.\n6.  **Accredito sul conto del beneficiario:** La banca del beneficiario accredita l'importo sul conto del beneficiario.\n7.  **Tempi:** I tempi di accredito variano a seconda della banca, del tipo di bonifico (ordinario o istantaneo) e del fatto che si tratti di un bonifico nazionale o internazionale. In genere, un bonifico ordinario nazionale impiega 1-2 giorni lavorativi. I bonifici istantanei sono accreditati in pochi secondi. I bonifici internazionali possono richiedere più tempo.\n8.  **Commissioni:** Le banche applicano delle commissioni per i bonifici. L'importo delle commissioni varia a seconda della banca, del tipo di bonifico e del paese di destinazione.\n\n**Riassumendo:**\n\n*   Tu (ordinante) hai bisogno dell'IBAN di chi deve ricevere i soldi (beneficiario).\n*   Comunichi alla tua banca i dati del beneficiario e l'importo da trasferire.\n*   La tua banca preleva i soldi dal tuo conto e li invia alla banca del beneficiario.\n*   La banca del beneficiario accredita i soldi sul conto del beneficiario.\n\n**Tipi di Bonifico:**\n\n*   **Bonifico Ordinario:** Il tipo più comune, con tempi di accredito standard (1-2 giorni lavorativi).\n*   **Bonifico Istantaneo:** Accredito immediato (entro pochi secondi), ma spesso con commissioni più elevate.\n*   **Bonifico SEPA (Single Euro Payments Area):** Bonifici in euro all'interno dell'area SEPA (che comprende la maggior parte dei paesi europei), con regole e costi standardizzati.\n*   **Bonifico Estero (Extra-SEPA):** Bonifici al di fuori dell'area SEPA, con tempi e costi generalmente più elevati.\n\n**Consigli:**\n\n*   **Verifica attentamente i dati:** Controlla che l'IBAN e gli altri dati del beneficiario siano corretti prima di disporre il bonifico. Un errore potrebbe causare ritardi o, nel peggiore dei casi, la perdita del denaro.\n*   **Conserva la ricevuta:** La ricevuta del bonifico è una prova dell'avvenuto pagamento e può essere utile in caso di problemi.\n*   **Sii consapevole delle commissioni:** Informati sulle commissioni applicate dalla tua banca prima di disporre il bonifico.\n*   **Valuta il bonifico istantaneo:** Se hai bisogno che il denaro arrivi immediatamente, valuta l'opzione del bonifico istantaneo, tenendo conto delle commissioni più elevate.\n\nSpero che questa spiegazione sia chiara. Se hai altre domande, non esitare a chiedere!\n",
+        "timestamp": "2025-05-12T07:25:55.964Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:27:28.580Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Come posso aiutarti oggi? 😊\n",
+        "timestamp": "2025-05-12T07:27:29.170Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Come si fa un biscotto",
+        "timestamp": "2025-05-12T07:27:48.045Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Fare un biscotto è un'esperienza divertente e gratificante! Ecco una ricetta base e le istruzioni, oltre a qualche consiglio per personalizzare i tuoi biscotti:\n\n**Ricetta Base per Biscotti al Burro:**\n\n**Ingredienti:**\n\n*   115 g di burro non salato, ammorbidito a temperatura ambiente\n*   100 g di zucchero semolato\n*   100 g di zucchero di canna, compattato\n*   1 uovo grande\n*   1 cucchiaino di estratto di vaniglia\n*   225 g di farina 00\n*   1/2 cucchiaino di bicarbonato di sodio\n*   1/2 cucchiaino di sale\n*   200 g di gocce di cioccolato (o altro ingrediente a piacere)\n\n**Istruzioni:**\n\n1.  **Preriscalda il forno:** Preriscalda il forno a 190°C (375°F). Prepara una teglia rivestendola con carta forno o un tappetino in silicone.\n\n2.  **Mescola il burro e gli zuccheri:** In una ciotola grande, sbatti il burro ammorbidito con lo zucchero semolato e lo zucchero di canna fino ad ottenere un composto spumoso e leggero. Puoi usare un mixer elettrico (a mano o da tavolo) o farlo a mano con una frusta.\n\n3.  **Aggiungi l'uovo e la vaniglia:** Aggiungi l'uovo e l'estratto di vaniglia al composto di burro e zucchero. Mescola fino a quando non saranno ben incorporati.\n\n4.  **Unisci gli ingredienti secchi:** In una ciotola separata, setaccia insieme la farina, il bicarbonato di sodio e il sale. Questo aiuta a prevenire grumi e assicura che gli ingredienti siano distribuiti uniformemente.\n\n5.  **Incorpora gli ingredienti secchi a quelli umidi:** Aggiungi gradualmente gli ingredienti secchi alla ciotola con gli ingredienti umidi. Mescola fino a quando non saranno appena combinati. Fai attenzione a non mescolare troppo, altrimenti i biscotti potrebbero risultare duri.\n\n6.  **Aggiungi le gocce di cioccolato (o altro):** Incorpora le gocce di cioccolato (o le noci, la frutta secca, le spezie, ecc.) nell'impasto.\n\n7.  **Forma i biscotti:** Preleva l'impasto a cucchiaiate o con un porzionatore per gelato e disponili sulla teglia preparata, lasciando un po' di spazio tra un biscotto e l'altro. Puoi anche arrotolare l'impasto in un cilindro, avvolgerlo nella pellicola trasparente e metterlo in frigo per circa 30 minuti. Poi taglia il cilindro a fette e disponile sulla teglia.\n\n8.  **Inforna:** Inforna i biscotti nel forno preriscaldato per 8-12 minuti, o fino a quando i bordi non saranno dorati.\n\n9.  **Raffredda:** Togli i biscotti dal forno e lasciali raffreddare sulla teglia per qualche minuto prima di trasferirli su una griglia per raffreddarli completamente.\n\n**Consigli e Personalizzazioni:**\n\n*   **Burro:** Assicurati che il burro sia ammorbidito a temperatura ambiente, ma non fuso. Questo è cruciale per la consistenza dei biscotti.\n*   **Zuccheri:** L'uso di entrambi gli zuccheri semolato e di canna conferisce ai biscotti un sapore e una consistenza migliori. Lo zucchero di canna aggiunge umidità e un sapore caramellato.\n*   **Ingredienti:** Sentiti libero di personalizzare i biscotti con diversi tipi di gocce di cioccolato (fondente, al latte, bianco), noci tritate, frutta secca, spezie (cannella, noce moscata), scorza di agrumi, o qualsiasi altro ingrediente che ti piaccia.\n*   **Consistenza:**\n    *   Per biscotti più morbidi, usa più zucchero di canna e meno farina.\n    *   Per biscotti più croccanti, usa più zucchero semolato e più farina.\n*   **Impasto:** Se l'impasto è troppo appiccicoso, mettilo in frigorifero per circa 30 minuti prima di formare i biscotti.\n*   **Cottura:** Tieni d'occhio i biscotti durante la cottura. Il tempo di cottura può variare a seconda del forno. Sono pronti quando i bordi sono dorati e il centro è ancora leggermente morbido.\n*   **Conservazione:** Conserva i biscotti in un contenitore ermetico a temperatura ambiente per un massimo di una settimana.\n\n**Variazioni:**\n\n*   **Biscotti al cioccolato:** Aggiungi 50g di cacao amaro in polvere agli ingredienti secchi.\n*   **Biscotti all'avena:** Sostituisci 50-100g di farina con fiocchi d'avena.\n*   **Biscotti con frutta secca:** Aggiungi circa 100g di frutta secca tritata (noci, mandorle, nocciole) all'impasto.\n*   **Biscotti speziati:** Aggiungi 1/2 cucchiaino di cannella in polvere, 1/4 cucchiaino di noce moscata e 1/4 cucchiaino di chiodi di garofano in polvere agli ingredienti secchi.\n\nSpero che questa guida ti sia utile! Buon divertimento e buona preparazione dei biscotti! Ricorda che la pratica rende perfetti, quindi non scoraggiarti se i tuoi primi biscotti non sono perfetti. Continua a sperimentare e a trovare la tua ricetta preferita!\n",
+        "timestamp": "2025-05-12T07:27:55.848Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:34:26.844Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Come posso aiutarti oggi? 😊\n",
+        "timestamp": "2025-05-12T07:34:27.556Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Chi sono?",
+        "timestamp": "2025-05-12T07:34:47.803Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Per risponderti, ho bisogno di un po' più di contesto. Potresti fornirmi ulteriori informazioni?\n\nAd esempio, potresti intendere:\n\n*   **Che ruolo ho?** (Sono un modello linguistico di grandi dimensioni)\n*   **Che origine ho?** (Sono stato sviluppato da Google)\n*   **Che capacità ho?**\n*   **A chi mi sto rivolgendo?**\n\nPiù mi dai informazioni, meglio posso capire la tua domanda e darti una risposta utile.",
+        "timestamp": "2025-05-12T07:34:49.340Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "È giusto questo calcolo? (5x-2)3=-30",
+        "timestamp": "2025-05-12T07:35:56.818Z"
+      },
+      {
+        "direction": "sent",
+        "content": "No, il calcolo così come è scritto non è corretto. Per risolvere l'equazione (5x - 2)3 = -30, devi seguire questi passaggi:\n\n1.  **Dividi entrambi i lati per 3:**\n   (5x - 2) = -30 / 3\n   5x - 2 = -10\n\n2.  **Aggiungi 2 a entrambi i lati:**\n   5x = -10 + 2\n   5x = -8\n\n3.  **Dividi entrambi i lati per 5:**\n   x = -8 / 5\n\nQuindi, la soluzione corretta è x = -8/5 o x = -1.6\n",
+        "timestamp": "2025-05-12T07:35:58.133Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:40:14.602Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:48:25.434Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Come posso aiutarti oggi? 😊\n",
+        "timestamp": "2025-05-12T07:48:26.168Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-12T07:52:00.794Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Come posso aiutarti oggi? 😊\n",
+        "timestamp": "2025-05-12T07:52:01.504Z",
+        "automatic": false
+      }
+    ],
+    "created": "2025-05-11T20:26:46.355Z",
+    "lastActivity": "2025-05-12T07:52:00.791Z",
+    "status": "active"
+  }
+}

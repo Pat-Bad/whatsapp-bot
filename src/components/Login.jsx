@@ -1,11 +1,15 @@
+// Importazione delle dipendenze necessarie
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 
-const Login = () => {
+// Componente Login che accetta una prop onLogin per gestire l'autenticazione
+const Login = ({ onLogin }) => {
+  // Stati per gestire i dati del form, lo stato di caricamento e gli errori
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Gestisce i cambiamenti nei campi del form
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginData((prevData) => ({
@@ -14,12 +18,14 @@ const Login = () => {
     }));
   };
 
+  // Gestisce il submit del form
   const handleLogin = (e) => {
     e.preventDefault();
     setError("");
 
     const { username, password } = loginData;
 
+    // Validazione dei campi
     if (!username) {
       setError("Per favore, inserisci lo username");
       return;
@@ -29,25 +35,33 @@ const Login = () => {
       setError("Per favore, inserisci la password");
       return;
     }
-    if (password.length < 6) {
-      setError("La password deve avere almeno 6 caratteri.");
-      return;
-    }
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      // da collegare al be, lo faccio con intellij???
-      console.log("Login effettuato con:", loginData);
-    }, 1000);
+    // Verifica delle credenziali contro le variabili d'ambiente
+    if (username === import.meta.env.VITE_APP_USR_UI && 
+        password === import.meta.env.VITE_APP_PWD_UI) {
+      // Simulazione di una chiamata API con setTimeout
+      setTimeout(() => {
+        setLoading(false);
+        onLogin(); // Chiamata alla funzione di callback per l'autenticazione
+      }, 1000);
+    } else {
+      // Gestione delle credenziali non valide
+      setTimeout(() => {
+        setLoading(false);
+        setError("Username o password non validi");
+      }, 1000);
+    }
   };
 
+  // Renderizzazione del form di login
   return (
     <Container className="container-fluid d-flex justify-content-center mt-5">
       <Row>
         <Col md={12}>
           <Form onSubmit={handleLogin}>
+            {/* Campo username */}
             <Form.Group
               controlId="formUsername"
               className="mb-3"
@@ -63,6 +77,7 @@ const Login = () => {
               />
             </Form.Group>
 
+            {/* Campo password */}
             <Form.Group
               controlId="formPassword"
               className="mb-3"
@@ -78,6 +93,7 @@ const Login = () => {
               />
             </Form.Group>
 
+            {/* Pulsante di submit */}
             <Button
               variant="primary"
               type="submit"
@@ -87,6 +103,7 @@ const Login = () => {
               {loading ? "Accesso in corso..." : "Login"}
             </Button>
 
+            {/* Visualizzazione degli errori */}
             {error && (
               <Alert
                 variant="danger"
