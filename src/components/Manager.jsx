@@ -1,48 +1,54 @@
+// Importazione delle dipendenze necessarie
 import { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Card, Button, Form, ListGroup } from "react-bootstrap";
 import axios from "axios";
 import io from "socket.io-client";
 
-// Configura l'URL di base per le richieste API
+// Configurazione dell'URL base per le richieste API
 const API_BASE_URL = "http://localhost:3000"; // Cambia con l'URL del tuo server
 axios.defaults.baseURL = API_BASE_URL;
 
 const Manager = () => {
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [responseMode, setResponseMode] = useState("auto"); // auto o manual
-  const [customDefaultResponse, setCustomDefaultResponse] = useState("Grazie per il tuo messaggio! Un operatore ti risponderà a breve.");
+  // Stati per gestire le conversazioni e i messaggi
+  const [conversations, setConversations] = useState([]); // Lista delle conversazioni
+  const [selectedConversation, setSelectedConversation] = useState(null); // Conversazione selezionata
+  const [messages, setMessages] = useState([]); // Messaggi della conversazione selezionata
+  const [newMessage, setNewMessage] = useState(""); // Nuovo messaggio da inviare
+  const [loading, setLoading] = useState(true); // Stato di caricamento
+  const [responseMode, setResponseMode] = useState("auto"); // Modalità di risposta (auto/manual)
+  const [customDefaultResponse, setCustomDefaultResponse] = useState("Grazie per il tuo messaggio! Un operatore ti risponderà a breve."); // Risposta automatica predefinita
+  
+  // Refs per gestire socket e scroll della chat
   const socketRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Connessione socket.io e gestione eventi
+  // Gestione della connessione socket.io e degli eventi in tempo reale
   useEffect(() => {
+    // Inizializzazione della connessione socket
     socketRef.current = io(API_BASE_URL);
     
-    // Ricevi le conversazioni iniziali
+    // Gestione delle conversazioni iniziali
     socketRef.current.on("conversations", (data) => {
       setConversations(data);
       setLoading(false);
     });
     
-    // Gestisci i nuovi messaggi
+    // Gestione dei nuovi messaggi in arrivo
     socketRef.current.on("new_message", (data) => {
-      // Aggiorna la conversazione corrispondente nella lista
+      // Aggiornamento della lista conversazioni
       setConversations(prevConversations => {
         const updatedConversations = [...prevConversations];
         const index = updatedConversations.findIndex(c => c.phone === data.phone);
         
         if (index !== -1) {
+          // Aggiornamento conversazione esistente
           updatedConversations[index] = {
             ...updatedConversations[index],
             lastActivity: new Date().toISOString(),
             lastMessage: data.message
           };
         } else {
-          // Nuova conversazione
+          // Aggiunta nuova conversazione
           updatedConversations.push({
             phone: data.phone,
             name: data.conversation.name,
@@ -51,17 +57,17 @@ const Manager = () => {
           });
         }
         
-        // Ordina le conversazioni per attività più recente
+        // Ordinamento conversazioni per attività recente
         return updatedConversations.sort((a, b) => 
           new Date(b.lastActivity) - new Date(a.lastActivity)
         );
       });
       
-      // Se la conversazione è attualmente selezionata, aggiorna i messaggi
+      // Aggiornamento messaggi se la conversazione è selezionata
       if (selectedConversation === data.phone) {
         setMessages(prev => [...prev, data.message]);
         
-        // Scroll alla fine della chat
+        // Scroll automatico alla fine della chat
         setTimeout(() => {
           if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -70,7 +76,7 @@ const Manager = () => {
       }
     });
     
-    // Pulisci la connessione al termine
+    // Pulizia della connessione al termine
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
@@ -78,27 +84,27 @@ const Manager = () => {
     };
   }, [selectedConversation]);
 
-  // Carica le impostazioni all'avvio
+  // Caricamento delle impostazioni all'avvio
   useEffect(() => {
     fetchSettings();
   }, []);
   
-  // Scroll alla fine della chat quando vengono caricati i messaggi o quando viene inviato un nuovo messaggio
+  // Gestione dello scroll automatico della chat
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Carica le conversazioni all'avvio
+  // Caricamento e aggiornamento periodico delle conversazioni
   useEffect(() => {
     fetchConversations();
-    // Aggiorna le conversazioni ogni 10 secondi
+    // Aggiornamento ogni 10 secondi
     const intervalId = setInterval(fetchConversations, 10000);
     return () => clearInterval(intervalId);
   }, []);
 
-  // Carica le conversazioni
+  // Funzione per caricare le conversazioni dal server
   const fetchConversations = async () => {
     try {
       setLoading(true);
@@ -112,7 +118,7 @@ const Manager = () => {
     }
   };
   
-  // Carica le impostazioni
+  // Funzione per caricare le impostazioni dal server
   const fetchSettings = async () => {
     try {
       const response = await axios.get("/api/settings");
@@ -123,7 +129,7 @@ const Manager = () => {
     }
   };
 
-  // Seleziona una conversazione
+  // Funzione per selezionare una conversazione
   const selectConversation = async (phone) => {
     try {
       const response = await axios.get(`/api/conversations/${phone}`);
@@ -134,7 +140,7 @@ const Manager = () => {
     }
   };
 
-  // Invia un messaggio
+  // Funzione per inviare un nuovo messaggio
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
@@ -144,19 +150,19 @@ const Manager = () => {
         message: newMessage
       });
       
-      // Aggiorna i messaggi
+      // Aggiornamento dei messaggi dopo l'invio
       const response = await axios.get(`/api/conversations/${selectedConversation}`);
       setMessages(response.data.messages);
       setNewMessage("");
       
-      // Aggiorna anche la lista delle conversazioni
+      // Aggiornamento della lista conversazioni
       fetchConversations();
     } catch (error) {
       console.error("Errore nell'invio del messaggio:", error);
     }
   };
   
-  // Gestisci invio messaggio con il tasto Enter
+  // Gestione dell'invio messaggio con tasto Enter
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -164,7 +170,7 @@ const Manager = () => {
     }
   };
 
-  // Aggiorna la risposta automatica predefinita
+  // Funzione per aggiornare la risposta automatica predefinita
   const updateDefaultResponse = async () => {
     try {
       await axios.post("/api/settings", {
@@ -176,7 +182,7 @@ const Manager = () => {
     }
   };
 
-  // Cambia la modalità di risposta
+  // Funzione per cambiare la modalità di risposta (auto/manual)
   const toggleResponseMode = async () => {
     const newMode = responseMode === "auto" ? "manual" : "auto";
     try {
@@ -190,9 +196,11 @@ const Manager = () => {
     }
   };
 
+  // Rendering dell'interfaccia utente
   return (
     <Container className="container-fluid mt-4">
       <Row>
+        {/* Colonna sinistra: lista conversazioni e impostazioni */}
         <Col md={4}>
           <h2 className="mb-3">Conversazioni</h2>
           {loading ? (
@@ -220,6 +228,7 @@ const Manager = () => {
             </ListGroup>
           )}
           
+          {/* Card delle impostazioni risposte */}
           <Card className="mt-4 mb-3">
             <Card.Header>Impostazioni Risposte</Card.Header>
             <Card.Body>
