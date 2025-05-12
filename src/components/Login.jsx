@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,18 +29,22 @@ const Login = () => {
       setError("Per favore, inserisci la password");
       return;
     }
-    if (password.length < 6) {
-      setError("La password deve avere almeno 6 caratteri.");
-      return;
-    }
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      // da collegare al be, lo faccio con intellij???
-      console.log("Login effettuato con:", loginData);
-    }, 1000);
+    // Verifica le credenziali con le variabili d'ambiente
+    if (username === import.meta.env.VITE_APP_USR_UI && 
+        password === import.meta.env.VITE_APP_PWD_UI) {
+      setTimeout(() => {
+        setLoading(false);
+        onLogin(); // Chiama la funzione onLogin passata come prop
+      }, 1000);
+    } else {
+      setTimeout(() => {
+        setLoading(false);
+        setError("Username o password non validi");
+      }, 1000);
+    }
   };
 
   return (
