@@ -131,7 +131,8 @@
     ],
     "created": "2025-05-11T20:26:46.355Z",
     "lastActivity": "2025-05-12T07:52:00.791Z",
-    "status": "active"
+    "status": "active",
+    "inactivityMessageSent": true
   },
   "whatsapp:+393349517320": {
     "name": "Patricia",
@@ -235,9 +236,43 @@
         "content": "And here I am! How can I help you today?\n",
         "timestamp": "2025-05-13T06:56:45.474Z",
         "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "devo riavviare?",
+        "timestamp": "2025-05-13T07:13:26.569Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Se mi dici perché pensi di dover riavviare, posso darti un consiglio più preciso. In generale, riavviare può essere utile quando:\n\n*   **Il computer o dispositivo è lento o non risponde.**\n*   **Un programma si è bloccato.**\n*   **Hai appena installato un aggiornamento del sistema operativo o un programma.**\n*   **Hai bisogno di risolvere problemi di connessione di rete.**\n\nSe hai uno di questi problemi, riavviare potrebbe essere una buona idea. Altrimenti, dimmi cosa sta succedendo e cercherò di aiutarti meglio!\n",
+        "timestamp": "2025-05-13T07:13:27.852Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "proviamo il messaggio automatico",
+        "timestamp": "2025-05-13T07:14:48.493Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ok, proviamo. Cosa vuoi che faccia questo messaggio automatico?\n\nPer esempio, posso:\n\n*   **Rispondere a una domanda specifica.** (Esempio: \"Qual è il tuo orario di apertura?\")\n*   **Fornire informazioni di contatto.** (Esempio: \"Come posso contattarvi?\")\n*   **Confermare la ricezione di un messaggio.** (Esempio: \"Grazie per il tuo messaggio! Ti risponderemo al più presto.\")\n*   **Reindirizzare l'utente a una risorsa online.** (Esempio: \"Visita il nostro sito web per maggiori informazioni: [URL del sito web]\")\n\nDimmi cosa deve fare il messaggio automatico e posso aiutarti a formularlo.\n",
+        "timestamp": "2025-05-13T07:14:49.885Z",
+        "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "prova inattività",
+        "timestamp": "2025-05-13T07:21:31.038Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Confermo di essere attivo. Come posso esserti utile?\n",
+        "timestamp": "2025-05-13T07:21:31.499Z",
+        "automatic": false
       }
     ],
     "created": "2025-05-12T21:15:11.377Z",
-    "lastActivity": "2025-05-13T06:56:45.125Z"
+    "lastActivity": "2025-05-13T07:21:31.038Z",
+    "inactivityMessageSent": false
   }
 }
