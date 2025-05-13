@@ -56,6 +56,48 @@ const saveConversations = () => {
   }
 };
 
+// Funzione per inviare un messaggio tramite Twilio
+const sendTwilioMessage = async (to, message) => {
+  try {
+    // Controllo della lunghezza del messaggio
+    if (message.length > 1500) {
+      console.warn("Messaggio troppo lungo, verrà troncato a 1500 caratteri");
+      message = message.substring(0, 1500) + "...";
+    }
+    
+    const client = twilio(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+
+    // Verifica che il numero "from" sia configurato correttamente
+    const twilioFromNumber = "whatsapp:" + process.env.TWILIO_PHONE_NUMBER;
+    
+    // Log per debug
+    console.log(`Invio messaggio da ${twilioFromNumber} a ${to}`);
+    
+    await client.messages.create({
+      body: message,
+      from: twilioFromNumber,
+      to: to,
+    });
+
+    console.log(`Messaggio inviato a ${to}: ${message.substring(0, 50)}...`);
+    return true;
+  } catch (error) {
+    console.error("Errore nell'invio del messaggio tramite Twilio:", error);
+    
+    // Log specifico per errori comuni
+    if (error.code === 63007) {
+      console.error("ERRORE: Impossibile trovare il Channel con l'indirizzo From specificato. Verifica che il numero Twilio sia configurato correttamente.");
+    } else if (error.code === 21617) {
+      console.error("ERRORE: Il messaggio supera il limite di 1600 caratteri.");
+    }
+    
+    return false;
+  }
+};
+
 // Funzione per gestire l'inattività e inviare un messaggio automatico
 const handleUserInactivity = () => {
   const inactivityLimit = 15 * 60 * 1000; // 15 minuti
@@ -87,18 +129,7 @@ const sendAutomaticMessage = async (from) => {
     "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!";
 
   try {
-    const client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
-
-    await client.messages.create({
-      body: automaticMessage,
-      from: "whatsapp:" + process.env.TWILIO_PHONE_NUMBER,
-      to: from,
-    });
-
-    console.log(`Messaggio automatico inviato a ${from}`);
+    await sendTwilioMessage(from, automaticMessage);
 
     // Aggiungi il messaggio automatico alla conversazione
     conversations[from].messages.push({
@@ -121,18 +152,7 @@ const sendClosingMessage = async (from) => {
     "La conversazione è stata chiusa per inattività. Se hai bisogno, non esitare ricontattarmi 😄";
 
   try {
-    const client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
-
-    await client.messages.create({
-      body: closingMessage,
-      from: "whatsapp:" + process.env.TWILIO_PHONE_NUMBER,
-      to: from,
-    });
-
-    console.log(`Messaggio di chiusura inviato a ${from}`);
+    await sendTwilioMessage(from, closingMessage);
 
     // Aggiungi il messaggio di chiusura alla conversazione
     conversations[from].messages.push({
@@ -209,8 +229,35 @@ app.post("/webhook", async (req, res) => {
   saveConversations();
 
   try {
+    // Imposta un flag per tracciare se abbiamo già inviato il messaggio "sto pensando"
+    let thinkingMessageSent = false;
+    
+    // Crea un timeout di 7 secondi per inviare un messaggio "sto pensando"
+    const thinkingTimeout = setTimeout(async () => {
+      const thinkingMessage = "Sto pensando...";
+      
+      // Invia il messaggio "sto pensando" tramite Twilio
+      await sendTwilioMessage(from, thinkingMessage);
+      
+      // Aggiungi il messaggio alla conversazione
+      conversations[from].messages.push({
+        direction: "sent",
+        content: thinkingMessage,
+        timestamp: new Date().toISOString(),
+        automatic: true,
+      });
+      
+      // Salva le conversazioni
+      saveConversations();
+      
+      thinkingMessageSent = true;
+    }, 7000); // 7 secondi
+
     // Chiedi la risposta a Gemini
     const aiResponse = await generateAIResponse(body);
+    
+    // Cancella il timeout se la risposta è arrivata prima dei 7 secondi
+    clearTimeout(thinkingTimeout);
 
     // Salva la risposta AI nella conversazione
     conversations[from].messages.push({
@@ -223,11 +270,18 @@ app.post("/webhook", async (req, res) => {
     // Salva le conversazioni
     saveConversations();
 
-    // Invia la risposta AI tramite Twilio
-    const twiml = `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Message>${aiResponse}</Message>\n</Response>`;
-    console.log("Risposta da inviare a Twilio:", twiml);
-    res.set("Content-Type", "text/xml");
-    res.send(twiml);
+    // Se abbiamo inviato il messaggio "sto pensando", invia la risposta finale tramite Twilio API
+    // Altrimenti usa la risposta TwiML standard
+    if (thinkingMessageSent) {
+      await sendTwilioMessage(from, aiResponse);
+      res.status(200).send("OK");
+    } else {
+      // Invia la risposta AI tramite Twilio TwiML
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Message>${aiResponse}</Message>\n</Response>`;
+      console.log("Risposta da inviare a Twilio:", twiml);
+      res.set("Content-Type", "text/xml");
+      res.send(twiml);
+    }
 
     // Reset dell'inactivityMessageSent quando l'utente invia un messaggio
     conversations[from].inactivityMessageSent = false;
@@ -279,16 +333,7 @@ app.post("/api/send", async (req, res) => {
   }
 
   try {
-    const client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
-
-    await client.messages.create({
-      body: message,
-      from: "whatsapp:" + process.env.TWILIO_PHONE_NUMBER,
-      to: phone,
-    });
+    await sendTwilioMessage(phone, message);
 
     // Aggiungi il messaggio personalizzato alla conversazione
     if (!conversations[phone]) {
