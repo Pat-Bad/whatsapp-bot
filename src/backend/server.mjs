@@ -1,4 +1,6 @@
 import express from "express";
+import { createServer } from "http"; // Importa createServer
+import { Server } from "socket.io"; // Importa la classe Server di Socket.IO
 import dotenv from "dotenv";
 import cors from "cors";
 import twilio from "twilio";
@@ -21,6 +23,14 @@ if (!fs.existsSync(dataDir)) {
 }
 
 const app = express();
+const httpServer = createServer(app); // Crea un server HTTP con Express
+const io = new Server(httpServer, {
+  // Inizializza Socket.IO passando l'server HTTP
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
 const port = process.env.PORT || 3000;
 const conversations = {}; // Archivio delle conversazioni in memoria
 
@@ -41,15 +51,112 @@ const saveConversations = () => {
   try {
     const conversationsFile = path.join(dataDir, "conversations.json");
     fs.writeFileSync(conversationsFile, JSON.stringify(conversations, null, 2));
+    console.log("Conversazioni salvate con successo");
   } catch (error) {
     console.error("Errore nel salvataggio delle conversazioni:", error);
   }
 };
 
-// Middleware per express per gestire i dati inviati
+// Funzione per gestire l'inattività e inviare un messaggio automatico
+const handleUserInactivity = (from) => {
+  const inactivityLimit = 15 * 60 * 1000; // 15 minuti
+  const user = conversations[from];
+
+  if (user && user.lastActivity) {
+    const lastActivityTime = new Date(user.lastActivity).getTime();
+    const currentTime = Date.now();
+
+    if (currentTime - lastActivityTime >= inactivityLimit) {
+      // Se l'utente è inattivo da più di 15 minuti, invia il messaggio automatico
+      sendAutomaticMessage(from);
+
+      // Imposta un timer per inviare un messaggio di chiusura dopo altri 15 minuti
+      setTimeout(() => {
+        sendClosingMessage(from); // Invio del messaggio di chiusura
+      }, inactivityLimit); // Timer per inviare il messaggio di chiusura
+    }
+  }
+};
+
+// Funzione per inviare il messaggio automatico
+const sendAutomaticMessage = async (from) => {
+  const automaticMessage =
+    "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!";
+
+  try {
+    const client = twilio(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+
+    await client.messages.create({
+      body: automaticMessage,
+      from: "whatsapp:" + process.env.TWILIO_PHONE_NUMBER,
+      to: from,
+    });
+
+    console.log(`Messaggio automatico inviato a ${from}`);
+
+    // Aggiungi il messaggio automatico alla conversazione
+    conversations[from].messages.push({
+      direction: "sent",
+      content: automaticMessage,
+      timestamp: new Date().toISOString(),
+      automatic: true,
+    });
+
+    // Salva le conversazioni
+    saveConversations();
+  } catch (error) {
+    console.error("Errore nell'invio del messaggio automatico:", error);
+  }
+};
+
+// Funzione per inviare il messaggio di chiusura
+const sendClosingMessage = async (from) => {
+  const closingMessage =
+    "La conversazione è stata chiusa per inattività. Se hai bisogno, non esitare ricontattarmi 😄";
+
+  try {
+    const client = twilio(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+
+    await client.messages.create({
+      body: closingMessage,
+      from: "whatsapp:" + process.env.TWILIO_PHONE_NUMBER,
+      to: from,
+    });
+
+    console.log(`Messaggio di chiusura inviato a ${from}`);
+
+    // Aggiungi il messaggio di chiusura alla conversazione
+    conversations[from].messages.push({
+      direction: "sent",
+      content: closingMessage,
+      timestamp: new Date().toISOString(),
+      automatic: true,
+    });
+
+    // Chiudi la conversazione
+    closeConversation(from);
+
+    // Salva le conversazioni
+    saveConversations();
+  } catch (error) {
+    console.error("Errore nell'invio del messaggio di chiusura:", error);
+  }
+};
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Assicurati che corrisponda all'origine del frontend
+    methods: ["GET", "POST"],
+  })
+);
 
 // Route principale (necessario per ngrok)
 app.post("/", (req, res) => {
@@ -62,51 +169,59 @@ app.post("/", (req, res) => {
 // Webhook di Twilio
 app.post("/webhook", async (req, res) => {
   console.log("Messaggio ricevuto da Twilio:", req.body);
-  
-  const from = req.body.From || '';
-  const body = req.body.Body || '';
-  const profileName = req.body.ProfileName || 'Utente';
-  
+
+  const from = req.body.From || "";
+  const body = req.body.Body || "";
+  const profileName = req.body.ProfileName || "Utente";
+
   // Salva il messaggio nella conversazione
   if (!conversations[from]) {
+    console.log(`Creando nuova conversazione per ${from}`);
     conversations[from] = {
       name: profileName,
       phone: from,
       messages: [],
       created: new Date().toISOString(),
-      lastActivity: new Date().toISOString()
+      lastActivity: new Date().toISOString(),
     };
   } else {
+    console.log(`Conversazione esistente per ${from}, aggiornando attività`);
     conversations[from].lastActivity = new Date().toISOString();
   }
-  
+
   // Aggiungi il messaggio ricevuto
   conversations[from].messages.push({
-    direction: 'received',
+    direction: "received",
     content: body,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
-  
+
   // Salva le conversazioni
   saveConversations();
-  
+
   try {
     // Chiedi la risposta a Gemini
     const aiResponse = await generateAIResponse(body);
 
     // Salva la risposta AI nella conversazione
     conversations[from].messages.push({
-      direction: 'sent',
+      direction: "sent",
       content: aiResponse,
       timestamp: new Date().toISOString(),
-      automatic: false
+      automatic: false,
     });
+
+    // Salva le conversazioni
     saveConversations();
 
     // Invia la risposta AI tramite Twilio
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Message>${aiResponse}</Message>\n</Response>`;
-    res.set('Content-Type', 'text/xml');
+    console.log("Risposta da inviare a Twilio:", twiml);
+    res.set("Content-Type", "text/xml");
     res.send(twiml);
+
+    // Controlla l'inattività dell'utente
+    handleUserInactivity(from);
   } catch (error) {
     console.error("Errore nell'elaborazione della risposta AI:", error);
     res.status(500).send("Errore interno del server");
@@ -115,16 +230,20 @@ app.post("/webhook", async (req, res) => {
 
 // API per ottenere tutte le conversazioni
 app.get("/api/conversations", (req, res) => {
+  console.log("Oggetto conversations:", conversations);
   // Converte l'oggetto conversazioni in un array ordinato per attività recente
   const conversationsArray = Object.values(conversations)
     .sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity))
-    .map(conv => ({
+    .map((conv) => ({
       phone: conv.phone,
       name: conv.name,
       lastActivity: conv.lastActivity,
-      lastMessage: conv.messages[conv.messages.length - 1]
+      lastMessage:
+        conv.messages.length > 0
+          ? conv.messages[conv.messages.length - 1]
+          : null,
     }));
-  
+
   res.json(conversationsArray);
 });
 
@@ -141,44 +260,73 @@ app.get("/api/conversations/:phone", (req, res) => {
 // API per inviare un messaggio personalizzato
 app.post("/api/send", async (req, res) => {
   const { phone, message } = req.body;
-  
+
   if (!phone || !message) {
-    return res.status(400).json({ error: "Telefono e messaggio sono richiesti" });
+    return res
+      .status(400)
+      .json({ error: "Telefono e messaggio sono richiesti" });
   }
-  
+
   try {
     // Configura client Twilio
-    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    
+    const client = twilio(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+
     // Invia il messaggio tramite Twilio
     await client.messages.create({
       body: message,
-      from: 'whatsapp:' + process.env.TWILIO_PHONE_NUMBER,
-      to: phone
+      from: "whatsapp:" + process.env.TWILIO_PHONE_NUMBER,
+      to: phone,
     });
-    
+
     // Aggiorna la conversazione
     if (conversations[phone]) {
       conversations[phone].lastActivity = new Date().toISOString();
       conversations[phone].messages.push({
-        direction: 'sent',
+        direction: "sent",
         content: message,
         timestamp: new Date().toISOString(),
-        automatic: false
+        automatic: false,
       });
-      
+
       // Salva le conversazioni
       saveConversations();
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error("Errore nell'invio del messaggio:", error);
-    res.status(500).json({ error: `Errore nell'invio del messaggio: ${error.message}` });
+    res
+      .status(500)
+      .json({ error: `Errore nell'invio del messaggio: ${error.message}` });
   }
 });
 
-// Avvio del server
-app.listen(port, () => {
+// Gestione delle connessioni Socket.IO
+io.on("connection", (socket) => {
+  console.log("Client connesso al socket:", socket.id);
+  // Emetti le conversazioni all'inizializzazione
+  const conversationsArray = Object.values(conversations)
+    .sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity))
+    .map((conv) => ({
+      phone: conv.phone,
+      name: conv.name,
+      lastActivity: conv.lastActivity,
+      lastMessage:
+        conv.messages.length > 0
+          ? conv.messages[conv.messages.length - 1]
+          : null,
+    }));
+  socket.emit("conversations", conversationsArray);
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnesso");
+  });
+});
+
+// Avvio del server HTTP (che ora gestisce sia Express che Socket.IO)
+httpServer.listen(port, () => {
   console.log(`Server in ascolto sulla porta ${port}`);
 });
