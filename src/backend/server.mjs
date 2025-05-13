@@ -1,6 +1,6 @@
 import express from "express";
-import { createServer } from "http"; // Importa createServer
-import { Server } from "socket.io"; // Importa la classe Server di Socket.IO
+import { createServer } from "http";
+import { Server } from "socket.io";
 import dotenv from "dotenv";
 import cors from "cors";
 import twilio from "twilio";
@@ -23,9 +23,8 @@ if (!fs.existsSync(dataDir)) {
 }
 
 const app = express();
-const httpServer = createServer(app); // Crea un server HTTP con Express
+const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  // Inizializza Socket.IO passando l'server HTTP
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"],
@@ -58,22 +57,26 @@ const saveConversations = () => {
 };
 
 // Funzione per gestire l'inattività e inviare un messaggio automatico
-const handleUserInactivity = (from) => {
+const handleUserInactivity = () => {
   const inactivityLimit = 15 * 60 * 1000; // 15 minuti
-  const user = conversations[from];
+  const now = Date.now();
 
-  if (user && user.lastActivity) {
+  for (const from in conversations) {
+    const user = conversations[from];
     const lastActivityTime = new Date(user.lastActivity).getTime();
-    const currentTime = Date.now();
 
-    if (currentTime - lastActivityTime >= inactivityLimit) {
-      // Se l'utente è inattivo da più di 15 minuti, invia il messaggio automatico
+    // Se sono passati almeno 15 minuti e non abbiamo già inviato il messaggio automatico
+    if (
+      now - lastActivityTime >= inactivityLimit &&
+      !user.inactivityMessageSent
+    ) {
       sendAutomaticMessage(from);
+      user.inactivityMessageSent = true;
 
-      // Imposta un timer per inviare un messaggio di chiusura dopo altri 15 minuti
+      // Timer per il messaggio di chiusura dopo altri 15 minuti
       setTimeout(() => {
-        sendClosingMessage(from); // Invio del messaggio di chiusura
-      }, inactivityLimit); // Timer per inviare il messaggio di chiusura
+        sendClosingMessage(from);
+      }, inactivityLimit);
     }
   }
 };
@@ -149,11 +152,18 @@ const sendClosingMessage = async (from) => {
   }
 };
 
+// Funzione per chiudere formalmente una conversazione
+const closeConversation = (from) => {
+  conversations[from].closed = true;
+  conversations[from].closedAt = new Date().toISOString();
+  console.log(`Conversazione con ${from} chiusa per inattività.`);
+};
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Assicurati che corrisponda all'origine del frontend
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   })
 );
@@ -161,7 +171,6 @@ app.use(
 // Route principale (necessario per ngrok)
 app.post("/", (req, res) => {
   console.log("Messaggio ricevuto sulla route principale:", req.body);
-  // Reindirizza a /webhook
   req.url = "/webhook";
   app.handle(req, res);
 });
@@ -220,6 +229,9 @@ app.post("/webhook", async (req, res) => {
     res.set("Content-Type", "text/xml");
     res.send(twiml);
 
+    // Reset dell'inactivityMessageSent quando l'utente invia un messaggio
+    conversations[from].inactivityMessageSent = false;
+
     // Controlla l'inattività dell'utente
     handleUserInactivity(from);
   } catch (error) {
@@ -231,7 +243,6 @@ app.post("/webhook", async (req, res) => {
 // API per ottenere tutte le conversazioni
 app.get("/api/conversations", (req, res) => {
   console.log("Oggetto conversations:", conversations);
-  // Converte l'oggetto conversazioni in un array ordinato per attività recente
   const conversationsArray = Object.values(conversations)
     .sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity))
     .map((conv) => ({
@@ -268,65 +279,40 @@ app.post("/api/send", async (req, res) => {
   }
 
   try {
-    // Configura client Twilio
     const client = twilio(
       process.env.TWILIO_ACCOUNT_SID,
       process.env.TWILIO_AUTH_TOKEN
     );
 
-    // Invia il messaggio tramite Twilio
     await client.messages.create({
       body: message,
       from: "whatsapp:" + process.env.TWILIO_PHONE_NUMBER,
       to: phone,
     });
 
-    // Aggiorna la conversazione
-    if (conversations[phone]) {
-      conversations[phone].lastActivity = new Date().toISOString();
-      conversations[phone].messages.push({
-        direction: "sent",
-        content: message,
-        timestamp: new Date().toISOString(),
-        automatic: false,
-      });
-
-      // Salva le conversazioni
-      saveConversations();
+    // Aggiungi il messaggio personalizzato alla conversazione
+    if (!conversations[phone]) {
+      conversations[phone] = {
+        messages: [],
+      };
     }
 
-    res.json({ success: true });
+    conversations[phone].messages.push({
+      direction: "sent",
+      content: message,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Salva le conversazioni
+    saveConversations();
+
+    res.json({ status: "Messaggio inviato con successo" });
   } catch (error) {
     console.error("Errore nell'invio del messaggio:", error);
-    res
-      .status(500)
-      .json({ error: `Errore nell'invio del messaggio: ${error.message}` });
+    res.status(500).json({ error: "Errore nell'invio del messaggio" });
   }
 });
 
-// Gestione delle connessioni Socket.IO
-io.on("connection", (socket) => {
-  console.log("Client connesso al socket:", socket.id);
-  // Emetti le conversazioni all'inizializzazione
-  const conversationsArray = Object.values(conversations)
-    .sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity))
-    .map((conv) => ({
-      phone: conv.phone,
-      name: conv.name,
-      lastActivity: conv.lastActivity,
-      lastMessage:
-        conv.messages.length > 0
-          ? conv.messages[conv.messages.length - 1]
-          : null,
-    }));
-  socket.emit("conversations", conversationsArray);
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnesso");
-  });
-});
-
-// Avvio del server HTTP (che ora gestisce sia Express che Socket.IO)
 httpServer.listen(port, () => {
-  console.log(`Server in ascolto sulla porta ${port}`);
+  console.log(`Server avviato su http://localhost:${port}`);
 });
