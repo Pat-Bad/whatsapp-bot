@@ -58,22 +58,26 @@ const saveConversations = () => {
 };
 
 // Funzione per gestire l'inattività e inviare un messaggio automatico
-const handleUserInactivity = (from) => {
+const handleUserInactivity = () => {
   const inactivityLimit = 15 * 60 * 1000; // 15 minuti
-  const user = conversations[from];
+  const now = Date.now();
 
-  if (user && user.lastActivity) {
+  for (const from in conversations) {
+    const user = conversations[from];
     const lastActivityTime = new Date(user.lastActivity).getTime();
-    const currentTime = Date.now();
 
-    if (currentTime - lastActivityTime >= inactivityLimit) {
-      // Se l'utente è inattivo da più di 15 minuti, invia il messaggio automatico
+    // Se sono passati almeno 15 minuti e non abbiamo già inviato il messaggio automatico
+    if (
+      now - lastActivityTime >= inactivityLimit &&
+      !user.inactivityMessageSent
+    ) {
       sendAutomaticMessage(from);
+      user.inactivityMessageSent = true;
 
-      // Imposta un timer per inviare un messaggio di chiusura dopo altri 15 minuti
+      // Timer per il messaggio di chiusura dopo altri 15 minuti
       setTimeout(() => {
-        sendClosingMessage(from); // Invio del messaggio di chiusura
-      }, inactivityLimit); // Timer per inviare il messaggio di chiusura
+        sendClosingMessage(from);
+      }, inactivityLimit);
     }
   }
 };
@@ -325,6 +329,8 @@ io.on("connection", (socket) => {
     console.log("Client disconnesso");
   });
 });
+// Controllo inattività ogni minuto
+setInterval(handleUserInactivity, 60 * 1000);
 
 // Avvio del server HTTP (che ora gestisce sia Express che Socket.IO)
 httpServer.listen(port, () => {
