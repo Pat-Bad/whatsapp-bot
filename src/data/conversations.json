@@ -369,12 +369,63 @@
         "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
         "timestamp": "2025-05-15T16:23:45.776Z",
         "automatic": true
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-15T22:10:41.073Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Dimmi pure cosa ti serve.\n",
+        "timestamp": "2025-05-15T22:10:42.659Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-15T22:25:05.433Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ok, dimmi pure cosa ti serve! Sono pronto a rispondere entro il limite di 1500 caratteri.\n",
+        "timestamp": "2025-05-15T22:25:06.982Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-15T22:30:47.537Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Sono pronto ad aiutarti. Cosa ti serve?\n",
+        "timestamp": "2025-05-15T22:30:49.084Z"
+      },
+      {
+        "direction": "received",
+        "content": "Come funziona la fisica?",
+        "timestamp": "2025-05-15T22:31:33.132Z"
+      },
+      {
+        "direction": "sent",
+        "content": "La fisica cerca di descrivere e prevedere come funziona l'universo, dalle particelle più piccole alle galassie più grandi. Utilizza modelli matematici e osservazioni sperimentali per formulare leggi fondamentali che governano la materia, l'energia, lo spazio e il tempo e le loro interazioni. In sostanza, cerca di rispondere al \"perché\" e al \"come\" di tutto ciò che ci circonda.\n",
+        "timestamp": "2025-05-15T22:31:35.269Z"
+      },
+      {
+        "direction": "received",
+        "content": "Come si chiama la pizzeria vicino a me?",
+        "timestamp": "2025-05-15T22:31:52.943Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Non posso saperlo! Non ho accesso alla tua posizione attuale. Per trovare la pizzeria più vicina, puoi:\n\n*   **Cercare su Google Maps:** Apri Google Maps e cerca \"pizzeria\".\n*   **Usare Yelp o TripAdvisor:** Queste app ti mostreranno le pizzerie nelle vicinanze e le recensioni.\n*   **Chiedere a un assistente vocale:** Ad esempio, \"Ehi Siri, trova una pizzeria vicino a me\".\n",
+        "timestamp": "2025-05-15T22:31:55.237Z"
       }
     ],
     "created": "2025-05-11T20:26:46.355Z",
-    "lastActivity": "2025-05-15T09:18:56.479Z",
+    "lastActivity": "2025-05-15T22:31:52.943Z",
     "status": "active",
-    "inactivityMessageSent": true
+    "inactivityMessageSent": false,
+    "closed": false
   },
   "whatsapp:+393349517320": {
     "name": "Patricia",
@@ -637,11 +688,17 @@
         "direction": "sent",
         "content": "Sono un modello linguistico, non un essere umano. Non ho esperienze personali, emozioni o la capacità di formare relazioni come la Rag (Retrieval Augmented Generation) con cui potrei \"funzionare\" o \"non funzionare\".\n\nForse intendevi chiedere perché la Rag non funziona *con me* nel generare risposte utili? Potrebbe essere dovuto a:\n\n*   **Qualità dei dati:** La Rag dipende dalla qualità e rilevanza dei dati da cui pesca le informazioni.\n*   **Implementazione Rag:** L'implementazione specifica della Rag potrebbe avere limitazioni.\n*   **Complessità della domanda:** La domanda potrebbe essere troppo ambigua o richiedere conoscenze esterne non incluse nei dati della Rag.\n",
         "timestamp": "2025-05-15T17:10:27.558Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
+        "timestamp": "2025-05-15T18:24:32.022Z",
+        "automatic": true
       }
     ],
     "created": "2025-05-12T21:15:11.377Z",
     "lastActivity": "2025-05-15T17:10:25.387Z",
-    "inactivityMessageSent": false,
+    "inactivityMessageSent": true,
     "closed": false
   }
 }

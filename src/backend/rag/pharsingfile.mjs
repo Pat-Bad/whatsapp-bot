@@ -21,16 +21,55 @@ const __dirname = path.dirname(__filename); // Directory contenente il file corr
 /**
  * Divide il testo in chunks di dimensione specificata per facilitare l'elaborazione
  * @param {string} text - Il testo da dividere in chunks
- * @param {number} chunkSize - Dimensione di ogni chunk (default: 1000 caratteri)
+ * @param {number} chunkSize - Dimensione di ogni chunk (default: 500 caratteri)
+ * @param {number} overlap - Sovrapposizione tra chunks consecutivi (default: 100 caratteri)
  * @returns {string[]} Array di chunks di testo
  */
-function splitIntoChunks(text, chunkSize = 1000) {
-  const chunks = []; // Array per memorizzare i chunks
-  let i = 0; // Indice per scorrere il testo
-  while (i < text.length) {
-    chunks.push(text.slice(i, i + chunkSize)); // Estrae un chunk di dimensione chunkSize
-    i += chunkSize; // Avanza l'indice
+function splitIntoChunks(text, chunkSize = 500, overlap = 100) {
+  if (!text || text.length === 0) {
+    return [];
   }
+  
+  const chunks = []; // Array per memorizzare i chunks
+  let startIndex = 0; // Indice iniziale per l'estrazione del chunk
+
+  // Continua a estrarre chunks finché non si raggiunge la fine del testo
+  while (startIndex < text.length) {
+    // Calcola l'indice finale del chunk corrente
+    let endIndex = Math.min(startIndex + chunkSize, text.length);
+    
+    // Cerca la fine di una frase o un punto all'interno degli ultimi 100 caratteri
+    // del chunk per spezzare in punti logici
+    if (endIndex < text.length) {
+      const lastPart = text.substring(endIndex - 100, endIndex);
+      const sentenceEnd = Math.max(
+        lastPart.lastIndexOf(". "),
+        lastPart.lastIndexOf(".\n"),
+        lastPart.lastIndexOf("? "),
+        lastPart.lastIndexOf("?\n"),
+        lastPart.lastIndexOf("! "),
+        lastPart.lastIndexOf("!\n")
+      );
+      
+      if (sentenceEnd !== -1) {
+        // Aggiusta l'indice finale per terminare alla fine di una frase
+        endIndex = endIndex - 100 + sentenceEnd + 2; // +2 per includere il punto e lo spazio
+      }
+    }
+    
+    // Estrae il chunk e lo aggiunge all'array
+    chunks.push(text.slice(startIndex, endIndex));
+    
+    // Calcola il prossimo indice di inizio tenendo conto della sovrapposizione
+    startIndex = endIndex - overlap;
+    
+    // Se il prossimo chunk sarebbe troppo piccolo, terminare
+    if (startIndex + chunkSize > text.length && startIndex < text.length) {
+      chunks.push(text.slice(startIndex));
+      break;
+    }
+  }
+  
   return chunks;
 }
 
@@ -42,6 +81,20 @@ function splitIntoChunks(text, chunkSize = 1000) {
  */
 export async function getEmbeddings(text) {
   try {
+    // Verifica che il testo esista e non sia vuoto
+    if (!text || text.trim().length === 0) {
+      console.error("Errore: testo vuoto o non valido per embedding");
+      return null;
+    }
+
+    // Verifica che la chiave API sia disponibile
+    if (!GEMINI_API_KEY) {
+      console.error("Errore: GEMINI_API_KEY non configurata o non valida");
+      return null;
+    }
+
+    console.log(`🔄 Generazione embedding per testo (lunghezza: ${text.length} caratteri)`);
+
     // Effettua una chiamata POST all'API Gemini per generare l'embedding
     const response = await fetch(GEMINI_EMBEDDING_URL, {
       method: "POST",
@@ -53,17 +106,35 @@ export async function getEmbeddings(text) {
           parts: [{ text: text }],
         },
       }),
+      timeout: 15000, // 15 secondi di timeout
     });
 
     // Verifica se la risposta è valida
     if (!response.ok) {
-      throw new Error(`Errore API: ${response.status} ${response.statusText}`);
+      const errorBody = await response.text();
+      console.error(`Errore API Embedding: ${response.status} ${response.statusText}`);
+      console.error(`Dettaglio errore: ${errorBody}`);
+      return null;
     }
 
-    const data = await response.json();
-    return data.embedding.values; // Restituisce i valori dell'embedding
+    try {
+      const data = await response.json();
+      
+      // Verifica che i dati contenano l'embedding
+      if (!data.embedding || !data.embedding.values || !Array.isArray(data.embedding.values)) {
+        console.error("Formato di risposta embedding non valido:", JSON.stringify(data));
+        return null;
+      }
+      
+      console.log(`✅ Embedding generato con successo - dimensione: ${data.embedding.values.length}`);
+      return data.embedding.values; // Restituisce i valori dell'embedding
+    } catch (jsonError) {
+      console.error("Errore nel parsing della risposta JSON:", jsonError);
+      return null;
+    }
   } catch (error) {
-    console.error("Errore durante la generazione degli embedding:", error);
+    console.error("Errore durante la generazione degli embedding:", error.message);
+    console.error("Stack trace:", error.stack);
     return null;
   }
 }

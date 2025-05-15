@@ -36,13 +36,50 @@ async function generateAIResponse(prompt, userPhone = null) {
       `Prompt inviato a Gemini per l'utente ${userPhone || "sconosciuto"}:`,
       prompt
     );
-    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    // Verifica validità API key Gemini
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("ERRORE: API key Gemini non configurata");
+      return "Mi dispiace, si è verificato un errore di configurazione. L'assistente non è disponibile al momento.";
+    }
+    
+    // Inizializza il modello con timeout
+    const model = ai.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.9,
+        topK: 40,
+        maxOutputTokens: 800, // Limita la lunghezza della risposta
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_ONLY_HIGH",
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_ONLY_HIGH",
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_ONLY_HIGH",
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_ONLY_HIGH",
+        },
+      ],
+    });
 
     let context = "";
+    let ragFailed = false;
 
     // Integrazione con RAG per utenti specifici
     if (userPhone) {
       try {
+        console.log("Tentativo di recupero contesto RAG per l'utente:", userPhone);
+        
         // Generazione embedding per la ricerca semantica
         const queryEmbedding = await getEmbeddings(prompt);
 
@@ -72,35 +109,61 @@ async function generateAIResponse(prompt, userPhone = null) {
               }
             });
 
-            console.log("Contesto RAG aggiunto alla richiesta");
+            console.log("Contesto RAG aggiunto alla richiesta:", context.substring(0, 150) + "...");
           } else {
             console.log(
               `Nessun documento pertinente trovato per l'utente ${userPhone}`
             );
+            ragFailed = true;
           }
+        } else {
+          console.log("Impossibile generare embedding per la query");
+          ragFailed = true;
         }
       } catch (ragError) {
         console.error("Errore durante la ricerca RAG:", ragError);
-        // Fallback a risposta senza RAG in caso di errore
+        console.error("Stack trace:", ragError.stack);
+        ragFailed = true;
+        // Non interrompere l'esecuzione, procedi senza contesto RAG
       }
     }
 
-    // Preparazione del prompt finale con contesto RAG
+    // Preparazione del prompt finale con o senza contesto RAG
     let finalPrompt = prompt;
     if (context) {
       finalPrompt = `${context}\n\nDomanda dell'utente: ${prompt}\n\nRispondi alla domanda dell'utente utilizzando le informazioni fornite sopra quando pertinenti. Se le informazioni non sono sufficienti, fornisci una risposta generale.`;
+    } else if (ragFailed) {
+      // Se RAG ha fallito, aggiungi una nota al prompt
+      console.log("RAG ha fallito, si procede con risposta generica di Gemini");
     }
 
     // Aggiunta del vincolo di lunghezza alla risposta
     const promptWithConstraint = `${finalPrompt}\n\nLimita la tua risposta a un massimo di 1500 caratteri.`;
 
-    // Generazione della risposta con Gemini
-    const result = await model.generateContent({
+    console.log("Prompt finale inviato a Gemini (primi 150 caratteri):", 
+      promptWithConstraint.substring(0, 150) + "...");
+
+    // Imposta timeout per la risposta di Gemini
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Timeout nella chiamata a Gemini API")), 30000);
+    });
+
+    // Generazione della risposta con Gemini con timeout
+    const responsePromise = model.generateContent({
       contents: [{ role: "user", parts: [{ text: promptWithConstraint }] }],
     });
 
+    // Usa race per gestire il timeout
+    const result = await Promise.race([responsePromise, timeoutPromise]);
+    
     const response = result.response;
     let text = await response.text();
+
+    // Verifica se la risposta è vuota
+    if (!text || text.trim() === "") {
+      console.warn("La risposta di Gemini è vuota, fornisco risposta di fallback");
+      return "Mi dispiace, non sono riuscito a generare una risposta pertinente. Posso aiutarti in altro modo?";
+    }
 
     // Troncamento della risposta se troppo lunga
     if (text.length > 1500) {
@@ -108,11 +171,18 @@ async function generateAIResponse(prompt, userPhone = null) {
       console.log("Risposta troncata a 1500 caratteri");
     }
 
-    console.log("Risposta Gemini:", text);
+    console.log("Risposta Gemini (primi 150 caratteri):", text.substring(0, 150) + "...");
     return text;
   } catch (error) {
     console.error("Errore nella generazione della risposta:", error);
-    return "Mi dispiace, si è verificato un errore nella generazione della risposta.";
+    console.error("Stack trace:", error.stack);
+    
+    // Risposta di fallback in caso di errore
+    if (error.message.includes("Timeout")) {
+      return "Mi dispiace, la generazione della risposta sta richiedendo troppo tempo. Potresti riformulare la tua domanda o riprovare più tardi?";
+    } else {
+      return "Mi dispiace, si è verificato un errore nella generazione della risposta. Posso aiutarti in altro modo?";
+    }
   }
 }
 
