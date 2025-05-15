@@ -353,10 +353,20 @@
         "content": "Ecco come la fisica influenza la pizza:\n\n*   **Termodinamica:** Il calore del forno trasferisce energia, cuocendo l'impasto (reazione di Maillard) e sciogliendo il formaggio (cambi di fase).\n*   **Meccanica dei fluidi:** La lievitazione dell'impasto è influenzata dalla pressione e dalla temperatura dei gas.\n*   **Gravità:** Influenza la forma e la distribuzione degli ingredienti.\n*   **Trasporto di calore:** Conduzione, convezione e irraggiamento distribuiscono il calore uniformemente.\n\nIn breve, la pizza è un delizioso esempio di fisica applicata!\n",
         "timestamp": "2025-05-13T12:43:20.616Z",
         "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-15T09:18:56.482Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Mi dispiace, si è verificato un errore nella generazione della risposta. Riprova più tardi o contatta l'assistenza.",
+        "timestamp": "2025-05-15T09:18:57.874Z"
       }
     ],
     "created": "2025-05-11T20:26:46.355Z",
-    "lastActivity": "2025-05-13T12:43:19.109Z",
+    "lastActivity": "2025-05-15T09:18:56.479Z",
     "status": "active",
     "inactivityMessageSent": false
   },

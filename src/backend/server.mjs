@@ -1,3 +1,10 @@
+/**
+ * Server principale per l'applicazione WhatsApp Bot
+ * Gestisce le comunicazioni via WhatsApp, il salvataggio delle conversazioni
+ * e l'integrazione con servizi esterni come Twilio e AI
+ */
+
+// Importazione delle dipendenze necessarie
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -8,20 +15,30 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import generateAIResponse from "./gemini.mjs";
+import multer from 'multer';
+import { handleFileUpload } from './rag/pharsingfile.mjs';
+import { getDocumentsForUser } from './rag/qdrant.mjs';
 
-// Configurazione path
+/**
+ * Configurazione dei path e delle directory
+ * Utilizza fileURLToPath per gestire correttamente i path in ambiente ES modules
+ */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const dataDir = path.join(__dirname, "../data");
 
-// Carica le variabili d'ambiente prima di utilizzarle
+// Inizializzazione delle variabili d'ambiente
 dotenv.config();
 
-// Assicura che la directory data esista
+// Creazione della directory data se non esiste
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
+/**
+ * Configurazione del server Express e Socket.IO
+ * Imposta CORS per permettere le richieste dal frontend
+ */
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -31,9 +48,12 @@ const io = new Server(httpServer, {
   },
 });
 const port = process.env.PORT || 3000;
-const conversations = {}; // Archivio delle conversazioni in memoria
+const conversations = {}; // Storage in-memory per le conversazioni
 
-// Carica le conversazioni dal file se esiste
+/**
+ * Caricamento delle conversazioni esistenti dal file JSON
+ * Se il file non esiste o c'è un errore, parte con un oggetto vuoto
+ */
 try {
   const conversationsFile = path.join(dataDir, "conversations.json");
   if (fs.existsSync(conversationsFile)) {
@@ -45,7 +65,10 @@ try {
   console.error("Errore nel caricamento delle conversazioni:", error);
 }
 
-// Salva le conversazioni su file
+/**
+ * Funzione per salvare le conversazioni su file
+ * Viene chiamata dopo ogni modifica alle conversazioni
+ */
 const saveConversations = () => {
   try {
     const conversationsFile = path.join(dataDir, "conversations.json");
@@ -56,10 +79,16 @@ const saveConversations = () => {
   }
 };
 
-// Funzione per inviare un messaggio tramite Twilio
+/**
+ * Funzione per inviare messaggi tramite Twilio
+ * Gestisce il troncamento dei messaggi lunghi e gli errori comuni
+ * @param {string} to - Numero di telefono del destinatario
+ * @param {string} message - Contenuto del messaggio
+ * @returns {Promise<boolean>} - True se l'invio ha successo, false altrimenti
+ */
 const sendTwilioMessage = async (to, message) => {
   try {
-    // Controllo della lunghezza del messaggio
+    // Gestione messaggi lunghi
     if (message.length > 1500) {
       console.warn("Messaggio troppo lungo, verrà troncato a 1500 caratteri");
       message = message.substring(0, 1500) + "...";
@@ -70,10 +99,7 @@ const sendTwilioMessage = async (to, message) => {
       process.env.TWILIO_AUTH_TOKEN
     );
 
-    // Verifica che il numero "from" sia configurato correttamente
     const twilioFromNumber = "whatsapp:" + process.env.TWILIO_PHONE_NUMBER;
-    
-    // Log per debug
     console.log(`Invio messaggio da ${twilioFromNumber} a ${to}`);
     
     await client.messages.create({
@@ -87,18 +113,22 @@ const sendTwilioMessage = async (to, message) => {
   } catch (error) {
     console.error("Errore nell'invio del messaggio tramite Twilio:", error);
     
-    // Log specifico per errori comuni
+    // Gestione errori specifici
     if (error.code === 63007) {
-      console.error("ERRORE: Impossibile trovare il Channel con l'indirizzo From specificato. Verifica che il numero Twilio sia configurato correttamente.");
+      console.error("ERRORE: Impossibile trovare il Channel con l'indirizzo From specificato");
     } else if (error.code === 21617) {
-      console.error("ERRORE: Il messaggio supera il limite di 1600 caratteri.");
+      console.error("ERRORE: Il messaggio supera il limite di 1600 caratteri");
     }
     
     return false;
   }
 };
 
-// Funzione per gestire l'inattività e inviare un messaggio automatico
+/**
+ * Sistema di gestione dell'inattività degli utenti
+ * Invia messaggi automatici dopo 15 minuti di inattività
+ * Chiude la conversazione dopo altri 15 minuti
+ */
 const handleUserInactivity = () => {
   const inactivityLimit = 15 * 60 * 1000; // 15 minuti
   const now = Date.now();
@@ -107,7 +137,6 @@ const handleUserInactivity = () => {
     const user = conversations[from];
     const lastActivityTime = new Date(user.lastActivity).getTime();
 
-    // Se sono passati almeno 15 minuti e non abbiamo già inviato il messaggio automatico
     if (
       now - lastActivityTime >= inactivityLimit &&
       !user.inactivityMessageSent
@@ -115,7 +144,6 @@ const handleUserInactivity = () => {
       sendAutomaticMessage(from);
       user.inactivityMessageSent = true;
 
-      // Timer per il messaggio di chiusura dopo altri 15 minuti
       setTimeout(() => {
         sendClosingMessage(from);
       }, inactivityLimit);
@@ -123,7 +151,10 @@ const handleUserInactivity = () => {
   }
 };
 
-// Funzione per inviare il messaggio automatico
+/**
+ * Funzione per inviare il messaggio di inattività
+ * @param {string} from - Numero di telefono dell'utente
+ */
 const sendAutomaticMessage = async (from) => {
   const automaticMessage =
     "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!";
@@ -131,7 +162,6 @@ const sendAutomaticMessage = async (from) => {
   try {
     await sendTwilioMessage(from, automaticMessage);
 
-    // Aggiungi il messaggio automatico alla conversazione
     conversations[from].messages.push({
       direction: "sent",
       content: automaticMessage,
@@ -139,14 +169,16 @@ const sendAutomaticMessage = async (from) => {
       automatic: true,
     });
 
-    // Salva le conversazioni
     saveConversations();
   } catch (error) {
     console.error("Errore nell'invio del messaggio automatico:", error);
   }
 };
 
-// Funzione per inviare il messaggio di chiusura
+/**
+ * Funzione per inviare il messaggio di chiusura conversazione
+ * @param {string} from - Numero di telefono dell'utente
+ */
 const sendClosingMessage = async (from) => {
   const closingMessage =
     "La conversazione è stata chiusa per inattività. Se hai bisogno, non esitare ricontattarmi 😄";
@@ -154,7 +186,6 @@ const sendClosingMessage = async (from) => {
   try {
     await sendTwilioMessage(from, closingMessage);
 
-    // Aggiungi il messaggio di chiusura alla conversazione
     conversations[from].messages.push({
       direction: "sent",
       content: closingMessage,
@@ -162,23 +193,24 @@ const sendClosingMessage = async (from) => {
       automatic: true,
     });
 
-    // Chiudi la conversazione
     closeConversation(from);
-
-    // Salva le conversazioni
     saveConversations();
   } catch (error) {
     console.error("Errore nell'invio del messaggio di chiusura:", error);
   }
 };
 
-// Funzione per chiudere formalmente una conversazione
+/**
+ * Funzione per chiudere formalmente una conversazione
+ * @param {string} from - Numero di telefono dell'utente
+ */
 const closeConversation = (from) => {
   conversations[from].closed = true;
   conversations[from].closedAt = new Date().toISOString();
   console.log(`Conversazione con ${from} chiusa per inattività.`);
 };
 
+// Configurazione middleware Express
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(
@@ -188,109 +220,109 @@ app.use(
   })
 );
 
-// Route principale (necessario per ngrok)
+/**
+ * Route principale per la compatibilità con ngrok
+ * Reindirizza le richieste al webhook
+ */
 app.post("/", (req, res) => {
   console.log("Messaggio ricevuto sulla route principale:", req.body);
   req.url = "/webhook";
   app.handle(req, res);
 });
 
-// Webhook di Twilio
+/**
+ * Webhook per la gestione dei messaggi WhatsApp
+ * Processa i messaggi in arrivo e genera risposte automatiche o manuali
+ */
 app.post("/webhook", async (req, res) => {
-  console.log("Messaggio ricevuto da Twilio:", req.body);
-
-  const from = req.body.From || "";
-  const body = req.body.Body || "";
-  const profileName = req.body.ProfileName || "Utente";
-
-  // Salva il messaggio nella conversazione
-  if (!conversations[from]) {
-    console.log(`Creando nuova conversazione per ${from}`);
-    conversations[from] = {
-      name: profileName,
-      phone: from,
-      messages: [],
-      created: new Date().toISOString(),
-      lastActivity: new Date().toISOString(),
-    };
-  } else {
-    console.log(`Conversazione esistente per ${from}, aggiornando attività`);
-    conversations[from].lastActivity = new Date().toISOString();
-  }
-
-  // Aggiungi il messaggio ricevuto
-  conversations[from].messages.push({
-    direction: "received",
-    content: body,
-    timestamp: new Date().toISOString(),
-  });
-
-  // Salva le conversazioni
-  saveConversations();
-
   try {
-    // Imposta un flag per tracciare se abbiamo già inviato il messaggio "sto pensando"
-    let thinkingMessageSent = false;
-    
-    // Crea un timeout di 7 secondi per inviare un messaggio "sto pensando"
-    const thinkingTimeout = setTimeout(async () => {
-      const thinkingMessage = "Sto pensando...";
-      
-      // Invia il messaggio "sto pensando" tramite Twilio
-      await sendTwilioMessage(from, thinkingMessage);
-      
-      // Aggiungi il messaggio alla conversazione
-      conversations[from].messages.push({
-        direction: "sent",
-        content: thinkingMessage,
-        timestamp: new Date().toISOString(),
-        automatic: true,
-      });
-      
-      // Salva le conversazioni
-      saveConversations();
-      
-      thinkingMessageSent = true;
-    }, 7000); // 7 secondi
-
-    // Chiedi la risposta a Gemini
-    const aiResponse = await generateAIResponse(body);
-    
-    // Cancella il timeout se la risposta è arrivata prima dei 7 secondi
-    clearTimeout(thinkingTimeout);
-
-    // Salva la risposta AI nella conversazione
-    conversations[from].messages.push({
-      direction: "sent",
-      content: aiResponse,
-      timestamp: new Date().toISOString(),
-      automatic: false,
-    });
-
-    // Salva le conversazioni
-    saveConversations();
-
-    // Se abbiamo inviato il messaggio "sto pensando", invia la risposta finale tramite Twilio API
-    // Altrimenti usa la risposta TwiML standard
-    if (thinkingMessageSent) {
-      await sendTwilioMessage(from, aiResponse);
-      res.status(200).send("OK");
-    } else {
-      // Invia la risposta AI tramite Twilio TwiML
-      const twiml = `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Message>${aiResponse}</Message>\n</Response>`;
-      console.log("Risposta da inviare a Twilio:", twiml);
-      res.set("Content-Type", "text/xml");
-      res.send(twiml);
+    // Validazione del messaggio
+    if (
+      !req.body ||
+      !req.body.object ||
+      !req.body.entry ||
+      !req.body.entry[0] ||
+      !req.body.entry[0].changes ||
+      !req.body.entry[0].changes[0] ||
+      !req.body.entry[0].changes[0].value ||
+      !req.body.entry[0].changes[0].value.messages ||
+      !req.body.entry[0].changes[0].value.messages[0]
+    ) {
+      return res.sendStatus(200);
     }
 
-    // Reset dell'inactivityMessageSent quando l'utente invia un messaggio
-    conversations[from].inactivityMessageSent = false;
+    const message = req.body.entry[0].changes[0].value.messages[0];
+    const phoneNumberId = req.body.entry[0].changes[0].value.metadata.phone_number_id;
+    const userPhone = message.from;
+    const messageText = message.text?.body || null;
+    
+    if (!messageText) {
+      console.log("Messaggio non di testo ricevuto, ignoro");
+      return res.sendStatus(200);
+    }
+    
+    console.log(`Messaggio ricevuto da ${userPhone}: ${messageText}`);
 
-    // Controlla l'inattività dell'utente
-    handleUserInactivity(from);
+    // Verifica della modalità di risposta
+    const settings = await getSettings();
+    
+    // Salva il messaggio ricevuto in una nuova conversazione o aggiorna una esistente
+    await storeMessage({
+      phone: userPhone,
+      content: messageText,
+      direction: 'received',
+      timestamp: new Date(),
+      status: 'delivered'
+    });
+
+    if (settings.responseMode === "auto") {
+      // In modalità automatica, genera risposta con AI passando il numero di telefono dell'utente
+      console.log("Modalità di risposta: Automatica. Genero risposta con AI...");
+      const response = await generateAIResponse(messageText, userPhone);
+      
+      // Invia la risposta
+      await sendWhatsAppMessage({
+        message: response,
+        phoneNumberId,
+        toPhone: userPhone,
+      });
+      
+      // Salva la risposta inviata
+      await storeMessage({
+        phone: userPhone,
+        content: response,
+        direction: 'sent',
+        timestamp: new Date(),
+        status: 'sent'
+      });
+      
+      console.log(`Risposta AI inviata a ${userPhone}`);
+    } else {
+      // In modalità manuale, invia solo la risposta predefinita
+      console.log("Modalità di risposta: Manuale. Invio risposta predefinita...");
+      
+      await sendWhatsAppMessage({
+        message: settings.defaultResponse,
+        phoneNumberId,
+        toPhone: userPhone,
+      });
+      
+      // Salva la risposta predefinita inviata
+      await storeMessage({
+        phone: userPhone,
+        content: settings.defaultResponse,
+        direction: 'sent',
+        timestamp: new Date(),
+        status: 'sent'
+      });
+      
+      console.log(`Risposta predefinita inviata a ${userPhone}`);
+    }
+
+    res.sendStatus(200);
   } catch (error) {
-    console.error("Errore nell'elaborazione della risposta AI:", error);
-    res.status(500).send("Errore interno del server");
+    console.error("Errore nella gestione dei webhook:", error);
+    res.sendStatus(200); // WhatsApp richiede sempre 200 OK anche in caso di errore
   }
 });
 
@@ -356,6 +388,148 @@ app.post("/api/send", async (req, res) => {
     console.error("Errore nell'invio del messaggio:", error);
     res.status(500).json({ error: "Errore nell'invio del messaggio" });
   }
+});
+
+// Configurazione di multer per il caricamento dei file
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    // Crea la directory temporanea se non esiste
+    const tempDir = path.join(__dirname, 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    cb(null, tempDir);
+  },
+  filename: function (req, file, cb) {
+    // Genera un nome file univoco
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+// Filtra per accettare solo PDF
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('Solo file PDF sono supportati'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 } // Limite di 10MB
+});
+
+// API per caricare un file PDF e associarlo a un utente
+app.post("/api/upload-pdf", upload.single("pdfFile"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Nessun file caricato" });
+    }
+    
+    const organizationId = req.body.organizationId;
+    if (!organizationId) {
+      return res.status(400).json({ success: false, message: "OrganizationId non specificato" });
+    }
+    
+    console.log(`File ricevuto: ${req.file.originalname} per organizationId: ${organizationId}`);
+    
+    // Il percorso del file temporaneo
+    const tempPath = req.file.path;
+    
+    // Elabora il file e carica su Qdrant
+    const result = await handleFileUpload(req.file, tempPath, organizationId);
+    
+    return res.json({
+      success: result.success,
+      message: result.message,
+      recordsCount: result.recordsCount || 0,
+      fileName: req.file.originalname
+    });
+  } catch (error) {
+    console.error("Errore durante l'upload del file:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: `Errore durante l'elaborazione: ${error.message}` 
+    });
+  }
+});
+
+// API per ottenere i documenti per un utente specifico
+app.get("/api/documents/:phone", async (req, res) => {
+  try {
+    const phone = req.params.phone;
+    console.log(`Richiesta documenti per l'utente: ${phone}`);
+    
+    if (!phone) {
+      return res.status(400).json({ success: false, message: "ID utente non specificato" });
+    }
+    
+    // Ottieni i documenti per l'utente
+    const documents = await getDocumentsForUser(phone);
+    console.log(`Documenti trovati: ${documents.length || 0}`);
+    
+    return res.json({ 
+      success: true, 
+      documents: documents || [],
+      message: `Recuperati ${documents.length || 0} documenti`
+    });
+  } catch (error) {
+    console.error("Errore nel recupero dei documenti:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: `Errore nel recupero dei documenti: ${error.message}` 
+    });
+  }
+});
+
+// In server.mjs, aggiungi queste funzioni
+const settingsFile = path.join(dataDir, "settings.json");
+let appSettings = {
+  responseMode: "auto",
+  defaultResponse: "Grazie per il tuo messaggio! Un operatore ti risponderà a breve."
+};
+
+// Carica le impostazioni dal file se esiste
+try {
+  if (fs.existsSync(settingsFile)) {
+    appSettings = JSON.parse(fs.readFileSync(settingsFile, "utf8"));
+  }
+} catch (error) {
+  console.error("Errore nel caricamento delle impostazioni:", error);
+}
+
+// Funzione per ottenere le impostazioni
+async function getSettings() {
+  return appSettings;
+}
+
+// Salva le impostazioni su file
+const saveSettings = () => {
+  try {
+    fs.writeFileSync(settingsFile, JSON.stringify(appSettings, null, 2));
+  } catch (error) {
+    console.error("Errore nel salvataggio delle impostazioni:", error);
+  }
+};
+
+// Endpoint per ottenere le impostazioni
+app.get("/api/settings", (req, res) => {
+  res.json(appSettings);
+});
+
+// Endpoint per aggiornare le impostazioni
+app.post("/api/settings", (req, res) => {
+  if (req.body.responseMode !== undefined) {
+    appSettings.responseMode = req.body.responseMode;
+  }
+  if (req.body.defaultResponse !== undefined) {
+    appSettings.defaultResponse = req.body.defaultResponse;
+  }
+  saveSettings();
+  res.json(appSettings);
 });
 
 httpServer.listen(port, () => {
