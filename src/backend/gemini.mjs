@@ -22,6 +22,7 @@ console.log("API KEY:", process.env.GEMINI_API_KEY);
 
 // Inizializzazione del client Gemini AI
 const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+console.log("API KEY presente:", !!process.env.GEMINI_API_KEY);
 
 /**
  * Genera una risposta AI utilizzando Gemini e opzionalmente il sistema RAG
@@ -31,36 +32,51 @@ const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 async function generateAIResponse(prompt, userPhone = null) {
   try {
-    console.log(`Prompt inviato a Gemini per l'utente ${userPhone || 'sconosciuto'}:`, prompt);
+    console.log(
+      `Prompt inviato a Gemini per l'utente ${userPhone || "sconosciuto"}:`,
+      prompt
+    );
     const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-    
+
     let context = "";
-    
+
     // Integrazione con RAG per utenti specifici
     if (userPhone) {
       try {
         // Generazione embedding per la ricerca semantica
         const queryEmbedding = await getEmbeddings(prompt);
-        
+
         if (queryEmbedding) {
           // Ricerca documenti pertinenti nel database vettoriale
-          const relevantDocs = await searchDocumentsForUser(queryEmbedding, userPhone, 3);
-          
+          const relevantDocs = await searchDocumentsForUser(
+            queryEmbedding,
+            userPhone,
+            3
+          );
+
           if (relevantDocs && relevantDocs.length > 0) {
-            console.log(`Trovati ${relevantDocs.length} documenti pertinenti per l'utente ${userPhone}`);
-            
+            console.log(
+              `Trovati ${relevantDocs.length} documenti pertinenti per l'utente ${userPhone}`
+            );
+
             // Costruzione del contesto dai documenti trovati
             context = "Informazioni rilevanti dai documenti dell'utente:\n\n";
-            
+
             relevantDocs.forEach((doc, index) => {
               if (doc.payload && doc.payload.text) {
-                context += `Documento ${index + 1} (fonte: ${doc.payload.metadata?.source || "sconosciuta"}, pagina: ${doc.payload.metadata?.page || "N/A"}):\n${doc.payload.text}\n\n`;
+                context += `Documento ${index + 1} (fonte: ${
+                  doc.payload.metadata?.source || "sconosciuta"
+                }, pagina: ${doc.payload.metadata?.page || "N/A"}):\n${
+                  doc.payload.text
+                }\n\n`;
               }
             });
-            
+
             console.log("Contesto RAG aggiunto alla richiesta");
           } else {
-            console.log(`Nessun documento pertinente trovato per l'utente ${userPhone}`);
+            console.log(
+              `Nessun documento pertinente trovato per l'utente ${userPhone}`
+            );
           }
         }
       } catch (ragError) {
@@ -68,21 +84,24 @@ async function generateAIResponse(prompt, userPhone = null) {
         // Fallback a risposta senza RAG in caso di errore
       }
     }
-    
+
     // Preparazione del prompt finale con contesto RAG
     let finalPrompt = prompt;
     if (context) {
       finalPrompt = `${context}\n\nDomanda dell'utente: ${prompt}\n\nRispondi alla domanda dell'utente utilizzando le informazioni fornite sopra quando pertinenti. Se le informazioni non sono sufficienti, fornisci una risposta generale.`;
     }
-    
+
     // Aggiunta del vincolo di lunghezza alla risposta
     const promptWithConstraint = `${finalPrompt}\n\nLimita la tua risposta a un massimo di 1500 caratteri.`;
-    
+
     // Generazione della risposta con Gemini
-    const result = await model.generateContent(promptWithConstraint);
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: promptWithConstraint }] }],
+    });
+
     const response = result.response;
     let text = await response.text();
-    
+
     // Troncamento della risposta se troppo lunga
     if (text.length > 1500) {
       text = text.substring(0, 1500) + "...";

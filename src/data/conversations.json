@@ -363,12 +363,18 @@
         "direction": "sent",
         "content": "Mi dispiace, si è verificato un errore nella generazione della risposta. Riprova più tardi o contatta l'assistenza.",
         "timestamp": "2025-05-15T09:18:57.874Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
+        "timestamp": "2025-05-15T16:23:45.776Z",
+        "automatic": true
       }
     ],
     "created": "2025-05-11T20:26:46.355Z",
     "lastActivity": "2025-05-15T09:18:56.479Z",
     "status": "active",
-    "inactivityMessageSent": false
+    "inactivityMessageSent": true
   },
   "whatsapp:+393349517320": {
     "name": "Patricia",
@@ -505,10 +511,137 @@
         "content": "Confermo di essere attivo. Come posso esserti utile?\n",
         "timestamp": "2025-05-13T07:21:31.499Z",
         "automatic": false
+      },
+      {
+        "direction": "received",
+        "content": "riproviamo...",
+        "timestamp": "2025-05-15T16:23:15.518Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ok, proverò a limitare la mia risposta a 1500 caratteri. Di cosa hai bisogno?\n",
+        "timestamp": "2025-05-15T16:23:16.922Z"
+      },
+      {
+        "direction": "received",
+        "content": "perché rispondi due volte e la seconda volta scrivi OK?",
+        "timestamp": "2025-05-15T16:23:32.642Z"
+      },
+      {
+        "direction": "sent",
+        "content": "A volte rispondo due volte per un errore tecnico nella piattaforma. La prima risposta potrebbe non essere stata inviata correttamente o essere stata interrotta, e il sistema tenta di inviarla di nuovo. Il \"OK\" finale è probabilmente una conferma automatica che la piattaforma ha registrato la mia risposta.\n",
+        "timestamp": "2025-05-15T16:23:34.274Z"
+      },
+      {
+        "direction": "received",
+        "content": "voglio eliminare quell'OK",
+        "timestamp": "2025-05-15T16:23:54.598Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Capisco. Se vuoi eliminare \"OK\" da un testo o una frase, puoi semplicemente rimuoverlo. Ad esempio, se hai la frase \"Va bene, OK\", puoi rimuovere \"OK\" per ottenere \"Va bene\". Se hai un testo più lungo, devi identificare dove si trova \"OK\" e cancellarlo.\n",
+        "timestamp": "2025-05-15T16:23:56.134Z"
+      },
+      {
+        "direction": "received",
+        "content": "lol",
+        "timestamp": "2025-05-15T16:24:06.057Z"
+      },
+      {
+        "direction": "sent",
+        "content": "\"lol\" è un'abbreviazione di \"laughing out loud\" (ridendo ad alta voce). Si usa comunemente nelle conversazioni online e nei messaggi di testo per esprimere divertimento o umorismo. Può anche essere usato in modo sarcastico o ironico.\n",
+        "timestamp": "2025-05-15T16:24:07.414Z"
+      },
+      {
+        "direction": "received",
+        "content": "dove è nato il risotto?",
+        "timestamp": "2025-05-15T16:28:02.381Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Il risotto è nato in Lombardia, più precisamente a Milano, nel periodo medievale. La leggenda più diffusa narra che sia stato inventato per scherzo da un giovane vetraio che lavorava alla costruzione del Duomo di Milano, il quale amava aggiungere zafferano a tutti i piatti, compreso il riso.\n",
+        "timestamp": "2025-05-15T16:28:04.145Z"
+      },
+      {
+        "direction": "received",
+        "content": "la boutique stile italiano vende abiti da donna?",
+        "timestamp": "2025-05-15T16:30:35.501Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Sì, la boutique Stile Italiano vende abiti da donna.\n",
+        "timestamp": "2025-05-15T16:30:37.364Z"
+      },
+      {
+        "direction": "received",
+        "content": "quanto costa la giacca di pelle in stile biker?",
+        "timestamp": "2025-05-15T16:31:15.111Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Il costo di una giacca di pelle in stile biker varia molto a seconda di diversi fattori:\n\n*   **Materiale:** Pelle vera (bovina, ovina, caprina) costa di più della similpelle o ecopelle.\n*   **Marca:** Brand di lusso o specializzati in abbigliamento moto hanno prezzi più alti.\n*   **Lavorazione:** Dettagli come cuciture, borchie, zip e la complessità del design influenzano il costo.\n*   **Dove si acquista:** Negozi fisici, online, outlet o mercatini offrono fasce di prezzo diverse.\n\nIn generale, puoi trovare giacche in similpelle a partire da 50-100€. Giacche in vera pelle possono costare dai 200€ fino a superare i 1000€ per modelli di alta qualità o firmati.\n",
+        "timestamp": "2025-05-15T16:31:17.540Z"
+      },
+      {
+        "direction": "received",
+        "content": "quanto costa la giacca di pelle da boutique stile italiano?",
+        "timestamp": "2025-05-15T16:31:35.965Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Il costo di una giacca di pelle da boutique stile italiano varia notevolmente a seconda di diversi fattori:\n\n*   **Qualità della pelle:** Pelle pieno fiore o nabuk di alta qualità saranno più costose.\n*   **Marca e designer:** Marchi rinomati e designer emergenti italiani influenzano il prezzo.\n*   **Lavorazione artigianale:** Lavorazioni fatte a mano con dettagli unici fanno aumentare il costo.\n*   **Complessità del design:** Modelli elaborati con particolari rifiniture sono più costosi.\n\nIn linea generale, puoi aspettarti un prezzo che oscilla **tra i 500€ e i 1500€ (o anche superiore)** per una giacca di pelle di buona qualità in una boutique italiana.\n",
+        "timestamp": "2025-05-15T16:31:38.347Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
+        "timestamp": "2025-05-15T16:46:52.403Z",
+        "automatic": true
+      },
+      {
+        "direction": "received",
+        "content": "tutto ok?",
+        "timestamp": "2025-05-15T17:05:50.470Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Sì, tutto ok, grazie per aver chiesto! 😊\n",
+        "timestamp": "2025-05-15T17:05:51.815Z"
+      },
+      {
+        "direction": "received",
+        "content": "che ore sono a Roma?",
+        "timestamp": "2025-05-15T17:06:59.497Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Sono le 17:04 a Roma.\n",
+        "timestamp": "2025-05-15T17:07:00.924Z"
+      },
+      {
+        "direction": "received",
+        "content": "a che ora apre il ristorante Bella Italia?",
+        "timestamp": "2025-05-15T17:07:55.478Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Per fornirti l'orario di apertura del ristorante Bella Italia, ho bisogno di sapere a quale ristorante specifico ti riferisci. Bella Italia è una catena e gli orari possono variare in base alla località.\n\nPer favore, indicami la città o la posizione del ristorante Bella Italia che ti interessa. In alternativa, posso cercare online se mi dai la città.\n",
+        "timestamp": "2025-05-15T17:07:57.006Z"
+      },
+      {
+        "direction": "received",
+        "content": "perché non funziona la rag con te?",
+        "timestamp": "2025-05-15T17:10:25.387Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Sono un modello linguistico, non un essere umano. Non ho esperienze personali, emozioni o la capacità di formare relazioni come la Rag (Retrieval Augmented Generation) con cui potrei \"funzionare\" o \"non funzionare\".\n\nForse intendevi chiedere perché la Rag non funziona *con me* nel generare risposte utili? Potrebbe essere dovuto a:\n\n*   **Qualità dei dati:** La Rag dipende dalla qualità e rilevanza dei dati da cui pesca le informazioni.\n*   **Implementazione Rag:** L'implementazione specifica della Rag potrebbe avere limitazioni.\n*   **Complessità della domanda:** La domanda potrebbe essere troppo ambigua o richiedere conoscenze esterne non incluse nei dati della Rag.\n",
+        "timestamp": "2025-05-15T17:10:27.558Z"
       }
     ],
     "created": "2025-05-12T21:15:11.377Z",
-    "lastActivity": "2025-05-13T07:21:31.038Z",
-    "inactivityMessageSent": true
+    "lastActivity": "2025-05-15T17:10:25.387Z",
+    "inactivityMessageSent": false,
+    "closed": false
   }
 }

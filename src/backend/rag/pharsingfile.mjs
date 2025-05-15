@@ -1,22 +1,22 @@
 // Importazione delle librerie necessarie per il funzionamento del modulo
-import { PDFExtract } from 'pdf.js-extract';  // Libreria per estrarre il testo da file PDF
-import path from 'path';  // Libreria per gestire i percorsi dei file in modo cross-platform
-import { fileURLToPath } from 'url';  // Utility per convertire URL in percorsi file
-import fetch from 'node-fetch';  // Libreria per effettuare chiamate HTTP
-import dotenv from 'dotenv';  // Libreria per gestire le variabili d'ambiente
-import fs from 'fs/promises';  // Libreria per operazioni file asincrone
-import { insertDocuments } from './qdrant.mjs';  // Funzione per inserire documenti nel database vettoriale Qdrant
+import { PDFExtract } from "pdf.js-extract"; // Libreria per estrarre il testo da file PDF
+import path from "path"; // Libreria per gestire i percorsi dei file in modo cross-platform
+import { fileURLToPath } from "url"; // Utility per convertire URL in percorsi file
+import fetch from "node-fetch"; // Libreria per effettuare chiamate HTTP
+import dotenv from "dotenv"; // Libreria per gestire le variabili d'ambiente
+import fs from "fs/promises"; // Libreria per operazioni file asincrone
+import { insertDocuments } from "./qdrant.mjs"; // Funzione per inserire documenti nel database vettoriale Qdrant
 
 // Carica le variabili d'ambiente dal file .env
 dotenv.config();
 
 // Configurazione delle costanti per l'API Gemini
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;  // Chiave API per Gemini
-const GEMINI_EMBEDDING_URL = `https://generativelanguage.googleapis.com/v1/models/embedding-001:embedContent?key=${GEMINI_API_KEY}`;  // URL endpoint per gli embedding
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY; // Chiave API per Gemini
+const GEMINI_EMBEDDING_URL = `https://generativelanguage.googleapis.com/v1/models/embedding-001:embedContent?key=${GEMINI_API_KEY}`; // URL endpoint per gli embedding
 
 // Ottieni il percorso del file corrente e la directory
-const __filename = fileURLToPath(import.meta.url);  // Percorso assoluto del file corrente
-const __dirname = path.dirname(__filename);  // Directory contenente il file corrente
+const __filename = fileURLToPath(import.meta.url); // Percorso assoluto del file corrente
+const __dirname = path.dirname(__filename); // Directory contenente il file corrente
 
 /**
  * Divide il testo in chunks di dimensione specificata per facilitare l'elaborazione
@@ -25,11 +25,11 @@ const __dirname = path.dirname(__filename);  // Directory contenente il file cor
  * @returns {string[]} Array di chunks di testo
  */
 function splitIntoChunks(text, chunkSize = 1000) {
-  const chunks = [];  // Array per memorizzare i chunks
-  let i = 0;  // Indice per scorrere il testo
+  const chunks = []; // Array per memorizzare i chunks
+  let i = 0; // Indice per scorrere il testo
   while (i < text.length) {
-    chunks.push(text.slice(i, i + chunkSize));  // Estrae un chunk di dimensione chunkSize
-    i += chunkSize;  // Avanza l'indice
+    chunks.push(text.slice(i, i + chunkSize)); // Estrae un chunk di dimensione chunkSize
+    i += chunkSize; // Avanza l'indice
   }
   return chunks;
 }
@@ -44,17 +44,15 @@ export async function getEmbeddings(text) {
   try {
     // Effettua una chiamata POST all'API Gemini per generare l'embedding
     const response = await fetch(GEMINI_EMBEDDING_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         content: {
-          parts: [
-            { text: text }
-          ]
-        }
-      })
+          parts: [{ text: text }],
+        },
+      }),
     });
 
     // Verifica se la risposta è valida
@@ -63,9 +61,9 @@ export async function getEmbeddings(text) {
     }
 
     const data = await response.json();
-    return data.embedding.values;  // Restituisce i valori dell'embedding
+    return data.embedding.values; // Restituisce i valori dell'embedding
   } catch (error) {
-    console.error('Errore durante la generazione degli embedding:', error);
+    console.error("Errore durante la generazione degli embedding:", error);
     return null;
   }
 }
@@ -81,107 +79,127 @@ export async function processPDFForOrganization(filePath, organizationId) {
   try {
     // Verifica la presenza dell'API Key necessaria per Gemini
     if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY non trovata. Assicurati di averla impostata nel file .env');
+      throw new Error(
+        "GEMINI_API_KEY non trovata. Assicurati di averla impostata nel file .env"
+      );
     }
 
     // Configurazione dell'estrattore PDF con opzioni ottimizzate
     const pdfExtract = new PDFExtract();
     const options = {
-      normalizeWhitespace: true,  // Normalizza gli spazi bianchi per una migliore leggibilità
-      disableCombineTextItems: false  // Permette la combinazione degli elementi di testo
+      normalizeWhitespace: true, // Normalizza gli spazi bianchi per una migliore leggibilità
+      disableCombineTextItems: false, // Permette la combinazione degli elementi di testo
     };
 
-    console.log(`📄 Estrazione del testo dal PDF per organizationId: ${organizationId}...`);
+    console.log(
+      `📄 Estrazione del testo dal PDF per organizationId: ${organizationId}...`
+    );
     console.log(`📄 Percorso file: ${filePath}`);
-    
+
     // Verifica l'esistenza del file PDF
     try {
       await fs.access(filePath);
     } catch (err) {
       throw new Error(`Il file PDF non esiste al percorso: ${filePath}`);
     }
-    
+
     // Estrae il contenuto dal PDF
     const data = await pdfExtract.extract(filePath, options);
-    
+
     // Log dei metadati e informazioni sul PDF
-    console.log('📄 Metadati del PDF:', data.meta);
+    console.log("📄 Metadati del PDF:", data.meta);
     console.log(`📄 Numero di pagine trovate: ${data.pages.length}`);
-    
-    console.log('🔄 Generazione degli embedding in corso...');
-    
-    const vectorRecords = [];  // Array per memorizzare i record vettoriali
-    const fileName = path.basename(filePath);  // Nome del file senza percorso
-    const timestamp = Date.now();  // Timestamp per generare ID unici
-    
+
+    console.log("🔄 Generazione degli embedding in corso...");
+
+    const vectorRecords = []; // Array per memorizzare i record vettoriali
+    const fileName = path.basename(filePath); // Nome del file senza percorso
+    const timestamp = Date.now(); // Timestamp per generare ID unici
+
     // Processa ogni pagina del PDF
     for (let i = 0; i < data.pages.length; i++) {
       const page = data.pages[i];
-      const pageText = page.content.map(item => item.str).join(' ');  // Combina il testo della pagina
-      
+      const pageText = page.content.map((item) => item.str).join(" "); // Combina il testo della pagina
+
       console.log(`\n📄 Processo pagina ${i + 1}/${data.pages.length}`);
-      
+
       // Divide il testo della pagina in chunks gestibili
       const chunks = splitIntoChunks(pageText);
       console.log(`📄 Pagina divisa in ${chunks.length} chunks`);
-      
+
       // Processa ogni chunk della pagina
       for (let j = 0; j < chunks.length; j++) {
         const chunk = chunks[j];
-        console.log(`\n📝 Chunk ${j+1}/${chunks.length} (${chunk.length} caratteri):`);
+        console.log(
+          `\n📝 Chunk ${j + 1}/${chunks.length} (${chunk.length} caratteri):`
+        );
         console.log(`📝 Testo (anteprima): ${chunk.substring(0, 100)}...`);
-        
+
         // Genera l'embedding per il chunk corrente
         const embedding = await getEmbeddings(chunk);
-        
+
         if (embedding) {
-          console.log(`✅ Embedding generato - Dimensione: ${embedding.length}`);
-          
+          console.log(
+            `✅ Embedding generato - Dimensione: ${embedding.length}`
+          );
+
           // Crea un ID univoco combinando timestamp e indici
           const uniqueId = parseInt(`${timestamp}${i}${j}`);
-          
+
           // Crea il record vettoriale completo
           const vectorRecord = {
-            id: uniqueId,  // ID numerico univoco
-            vector: embedding,  // Vettore dell'embedding
+            id: uniqueId, // ID numerico univoco
+            vector: embedding, // Vettore dell'embedding
             payload: {
-              text: chunk,  // Testo originale del chunk
+              text: chunk, // Testo originale del chunk
               metadata: {
-                source: fileName,  // Nome del file sorgente
-                page: i + 1,  // Numero della pagina
+                source: fileName, // Nome del file sorgente
+                page: i + 1, // Numero della pagina
                 chunk: j + 1, // Numero del chunk
-                organizationId: organizationId  // ID dell'organizzazione/utente
+                organizationId: organizationId, // ID dell'organizzazione/utente
               },
-              organizationId: organizationId  // Duplicato a livello root per facilità di ricerca
-            }
+
+              organizationId: organizationId, // Duplicato a livello root per facilità di ricerca
+            },
           };
-          
+
           vectorRecords.push(vectorRecord);
         } else {
-          console.error('❌ Impossibile generare embedding per questo chunk');
+          console.error("❌ Impossibile generare embedding per questo chunk");
+          console.error("Errore HTTP:", error.response?.status); // Stato HTTP
+          console.error("Dettagli errore:", error.response?.data); // Messaggio d'errore
         }
       }
     }
-    
-    console.log(`\n🔄 Totale record vettoriali creati: ${vectorRecords.length}`);
-    
+
+    console.log(
+      `\n🔄 Totale record vettoriali creati: ${vectorRecords.length}`
+    );
+
     // Inserisci i record vettoriali in Qdrant se ce ne sono
     if (vectorRecords.length > 0) {
-      console.log(`🔄 Inserimento di ${vectorRecords.length} record in Qdrant...`);
+      console.log(
+        `🔄 Inserimento di ${vectorRecords.length} record in Qdrant...`
+      );
       const result = await insertDocuments(vectorRecords, organizationId);
       if (result) {
-        console.log('✅ Tutti i record sono stati inseriti correttamente in Qdrant');
+        console.log(
+          "✅ Tutti i record sono stati inseriti correttamente in Qdrant"
+        );
       } else {
-        console.error('❌ Si è verificato un errore durante l\'inserimento dei record in Qdrant');
+        console.error(
+          "❌ Si è verificato un errore durante l'inserimento dei record in Qdrant"
+        );
       }
     } else {
-      console.warn('⚠️ Nessun record vettoriale creato, nessun inserimento in Qdrant');
+      console.warn(
+        "⚠️ Nessun record vettoriale creato, nessun inserimento in Qdrant"
+      );
     }
-    
-    return vectorRecords;
 
+    return vectorRecords;
   } catch (error) {
-    console.error('❌ Errore durante l\'elaborazione:', error);
+    console.error("❌ Errore durante l'elaborazione:", error);
     throw error;
   }
 }
@@ -195,57 +213,67 @@ export async function processPDFForOrganization(filePath, organizationId) {
  */
 export async function handleFileUpload(file, tempPath, organizationId) {
   try {
-    console.log(`🔄 Inizio elaborazione file: ${file.originalname} per organizationId: ${organizationId}`);
+    console.log(
+      `🔄 Inizio elaborazione file: ${file.originalname} per organizationId: ${organizationId}`
+    );
     console.log(`🔄 Percorso temporaneo: ${tempPath}`);
-    
+
     // Verifica che il file esista
     try {
       await fs.access(tempPath);
-      console.log('✅ File temporaneo accessibile');
+      console.log("✅ File temporaneo accessibile");
     } catch (err) {
       throw new Error(`Il file temporaneo non è accessibile: ${err.message}`);
     }
-    
+
     // Processa il PDF e crea gli embedding
-    const vectorRecords = await processPDFForOrganization(tempPath, organizationId);
-    
+    const vectorRecords = await processPDFForOrganization(
+      tempPath,
+      organizationId
+    );
+
     // Elimina il file temporaneo
     await fs.unlink(tempPath);
-    console.log('✅ File temporaneo eliminato');
-    
+    console.log("✅ File temporaneo eliminato");
+
     return {
       success: true,
       message: `File elaborato con successo: ${vectorRecords.length} chunks creati`,
       recordsCount: vectorRecords.length,
-      fileName: file.originalname
+      fileName: file.originalname,
     };
   } catch (error) {
-    console.error('❌ Errore durante l\'upload del file:', error);
-    
+    console.error("❌ Errore durante l'upload del file:", error);
+
     // Assicurati che il file temporaneo venga eliminato anche in caso di errore
     try {
       await fs.unlink(tempPath);
-      console.log('✅ File temporaneo eliminato dopo errore');
+      console.log("✅ File temporaneo eliminato dopo errore");
     } catch (unlinkError) {
-      console.error('❌ Errore durante l\'eliminazione del file temporaneo:', unlinkError);
+      console.error(
+        "❌ Errore durante l'eliminazione del file temporaneo:",
+        unlinkError
+      );
     }
-    
+
     return {
       success: false,
       message: `Errore durante l'elaborazione del file: ${error.message}`,
-      fileName: file.originalname
+      fileName: file.originalname,
     };
   }
 }
 
 // Esporta la funzione extractTextAndCreateEmbeddings per uso autonomo
 export async function extractTextAndCreateEmbeddings() {
-  const pdfPath = path.join(__dirname, '../../assets/mockups/Agenzia_Viaggi_Mondo_Esotico_.pdf');
-  return await processPDFForOrganization(pdfPath, 'default');
+  const pdfPath = path.join(
+    __dirname,
+    "../../assets/mockups/Agenzia_Viaggi_Mondo_Esotico_.pdf"
+  );
+  return await processPDFForOrganization(pdfPath, "default");
 }
 
 // Se il file è stato eseguito direttamente
 if (import.meta.url === `file://${process.argv[1]}`) {
   extractTextAndCreateEmbeddings();
 }
-
