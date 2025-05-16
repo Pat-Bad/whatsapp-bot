@@ -515,13 +515,26 @@
         "direction": "sent",
         "content": "Ciao! Dimmi pure cosa ti serve.\n",
         "timestamp": "2025-05-16T13:47:26.221Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
+        "timestamp": "2025-05-16T14:06:44.669Z",
+        "automatic": true
+      },
+      {
+        "direction": "sent",
+        "content": "La conversazione è stata chiusa per inattività. Se hai bisogno, non esitare a ricontattarmi 😄",
+        "timestamp": "2025-05-16T14:21:44.733Z",
+        "automatic": true
       }
     ],
     "created": "2025-05-11T20:26:46.355Z",
     "lastActivity": "2025-05-16T13:47:24.705Z",
     "status": "active",
-    "inactivityMessageSent": false,
-    "closed": false
+    "inactivityMessageSent": true,
+    "closed": true,
+    "closedAt": "2025-05-16T14:21:44.733Z"
   },
   "whatsapp:+393349517320": {
     "name": "Patricia",
@@ -790,11 +803,74 @@
         "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
         "timestamp": "2025-05-15T18:24:32.022Z",
         "automatic": true
+      },
+      {
+        "direction": "received",
+        "content": "ci sei?",
+        "timestamp": "2025-05-16T14:06:02.241Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Sì, ci sono. Posso aiutarti con informazioni su abbigliamento (giacca sportiva, sciarpa di seta, cintura in pelle) da \"Boutique Stile Italiano\", gestione attività con \"TaskMaster Pro\" o servizi di consegna pasti da \"Ristorante Bella Italia\".\n",
+        "timestamp": "2025-05-16T14:06:03.911Z"
+      },
+      {
+        "direction": "received",
+        "content": "a che ora apre la boutique?",
+        "timestamp": "2025-05-16T14:06:24.100Z"
+      },
+      {
+        "direction": "sent",
+        "content": "I documenti forniti contengono informazioni sui prodotti della boutique \"Stile Italiano\" e sul ristorante \"Bella Italia\". Non ci sono informazioni sull'orario di apertura della boutique.\n",
+        "timestamp": "2025-05-16T14:06:25.440Z"
+      },
+      {
+        "direction": "received",
+        "content": "cosa vende la boutique?",
+        "timestamp": "2025-05-16T14:06:36.925Z"
+      },
+      {
+        "direction": "sent",
+        "content": "La boutique \"Stile Italiano\" vende abbigliamento donna (vestiti eleganti, giacche di pelle, jeans skinny, maglioni di lana) e abbigliamento uomo (abiti classici, camicie Oxford, giacche sportive). Offre anche accessori come sciarpe di seta e cinture in pelle.\n",
+        "timestamp": "2025-05-16T14:06:38.413Z"
+      },
+      {
+        "direction": "received",
+        "content": "cos'è taskmaster pro? che tipo di anzienda è?",
+        "timestamp": "2025-05-16T14:06:58.783Z"
+      },
+      {
+        "direction": "sent",
+        "content": "TaskMaster Pro è un'applicazione. Il manuale utente indica che permette di creare un account, aggiungere attività con titolo, descrizione, data e priorità. Offre funzionalità di visualizzazione report, collaborazione in team e si integra con Google Calendar, Slack e Trello.\nL'azienda che sviluppa TaskMaster Pro si chiama \"TaskMaster Pro\".\n",
+        "timestamp": "2025-05-16T14:07:01.270Z"
+      },
+      {
+        "direction": "received",
+        "content": "dove si trova Bella Italia?",
+        "timestamp": "2025-05-16T14:07:15.866Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Il Ristorante \"Bella Italia\" si trova in Via Roma, 12, 20100 Milano, Italia. La fermata della metropolitana più vicina è \"Duomo\" (M1, M3).\n",
+        "timestamp": "2025-05-16T14:07:17.330Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
+        "timestamp": "2025-05-16T14:22:44.770Z",
+        "automatic": true
+      },
+      {
+        "direction": "sent",
+        "content": "La conversazione è stata chiusa per inattività. Se hai bisogno, non esitare a ricontattarmi 😄",
+        "timestamp": "2025-05-16T14:37:44.750Z",
+        "automatic": true
       }
     ],
     "created": "2025-05-12T21:15:11.377Z",
-    "lastActivity": "2025-05-15T17:10:25.387Z",
+    "lastActivity": "2025-05-16T14:07:15.866Z",
     "inactivityMessageSent": true,
-    "closed": false
+    "closed": true,
+    "closedAt": "2025-05-16T14:37:44.750Z"
   }
 }

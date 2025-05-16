@@ -810,6 +810,10 @@ const Manager = ({ onLogout }) => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <div className="text-center p-3 border-top border-1 border-black bg-dark text-light">
+        &copy; {new Date().getFullYear()} Francesco & Patricia
+      </div>
     </div>
   );
 };
