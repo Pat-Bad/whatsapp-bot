@@ -140,15 +140,15 @@ export async function getEmbeddings(text) {
 }
 
 /**
- * Processa un file PDF e crea embedding associati a un organizationId specifico
- * Questa funzione è il cuore del sistema di elaborazione documenti
- * @param {string} filePath - Percorso del file PDF da processare
- * @param {string} organizationId - ID dell'organizzazione/utente a cui associare il documento
+ * Processa un PDF per un'organizzazione, estrae il testo, genera embedding e li memorizza
+ * @param {string} filePath - Percorso del file PDF
+ * @param {string} organizationId - ID dell'organizzazione
  * @returns {Promise<Array>} Array di record vettoriali creati
  */
 export async function processPDFForOrganization(filePath, organizationId) {
   try {
-    // Verifica la presenza dell'API Key necessaria per Gemini
+    // Verifica la presenza dell'API key di Gemini
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
       throw new Error(
         "GEMINI_API_KEY non trovata. Assicurati di averla impostata nel file .env"
@@ -187,64 +187,78 @@ export async function processPDFForOrganization(filePath, organizationId) {
     const fileName = path.basename(filePath); // Nome del file senza percorso
     const timestamp = Date.now(); // Timestamp per generare ID unici
 
+    // Contatori per log riassuntivo
+    let totalChunks = 0;
+    let successfulEmbeddings = 0;
+    let failedEmbeddings = 0;
+
     // Processa ogni pagina del PDF
     for (let i = 0; i < data.pages.length; i++) {
       const page = data.pages[i];
       const pageText = page.content.map((item) => item.str).join(" "); // Combina il testo della pagina
 
-      console.log(`\n📄 Processo pagina ${i + 1}/${data.pages.length}`);
-
       // Divide il testo della pagina in chunks gestibili
       const chunks = splitIntoChunks(pageText);
-      console.log(`📄 Pagina divisa in ${chunks.length} chunks`);
+      totalChunks += chunks.length;
+      
+      // Log solo all'inizio della pagina
+      console.log(`📄 Processo pagina ${i + 1}/${data.pages.length} - ${chunks.length} chunks`);
 
       // Processa ogni chunk della pagina
       for (let j = 0; j < chunks.length; j++) {
         const chunk = chunks[j];
-        console.log(
-          `\n📝 Chunk ${j + 1}/${chunks.length} (${chunk.length} caratteri):`
-        );
-        console.log(`📝 Testo (anteprima): ${chunk.substring(0, 100)}...`);
+        
+        // Log ridotto solo per monitorare l'avanzamento
+        if (j % 5 === 0 || j === chunks.length - 1) {
+          console.log(`📝 Progresso: chunk ${j + 1}/${chunks.length} nella pagina ${i + 1}`);
+        }
 
         // Genera l'embedding per il chunk corrente
-        const embedding = await getEmbeddings(chunk);
+        try {
+          const embedding = await getEmbeddings(chunk);
 
-        if (embedding) {
-          console.log(
-            `✅ Embedding generato - Dimensione: ${embedding.length}`
-          );
+          if (embedding) {
+            successfulEmbeddings++;
 
-          // Crea un ID univoco combinando timestamp e indici
-          const uniqueId = parseInt(`${timestamp}${i}${j}`);
+            // Crea un ID univoco combinando timestamp e indici
+            const uniqueId = parseInt(`${timestamp}${i}${j}`);
 
-          // Crea il record vettoriale completo
-          const vectorRecord = {
-            id: uniqueId, // ID numerico univoco
-            vector: embedding, // Vettore dell'embedding
-            payload: {
-              text: chunk, // Testo originale del chunk
-              metadata: {
-                source: fileName, // Nome del file sorgente
-                page: i + 1, // Numero della pagina
-                chunk: j + 1, // Numero del chunk
-                organizationId: organizationId, // ID dell'organizzazione/utente
+            // Crea il record vettoriale completo
+            const vectorRecord = {
+              id: uniqueId, // ID numerico univoco
+              vector: embedding, // Vettore dell'embedding
+              payload: {
+                text: chunk, // Testo originale del chunk
+                metadata: {
+                  source: fileName, // Nome del file sorgente
+                  page: i + 1, // Numero della pagina
+                  chunk: j + 1, // Numero del chunk
+                  organizationId: organizationId, // ID dell'organizzazione/utente
+                },
+                organizationId: organizationId, // Duplicato a livello root per facilità di ricerca
               },
+            };
 
-              organizationId: organizationId, // Duplicato a livello root per facilità di ricerca
-            },
-          };
-
-          vectorRecords.push(vectorRecord);
-        } else {
-          console.error("❌ Impossibile generare embedding per questo chunk");
-          console.error("Errore HTTP:", error.response?.status); // Stato HTTP
-          console.error("Dettagli errore:", error.response?.data); // Messaggio d'errore
+            vectorRecords.push(vectorRecord);
+          } else {
+            failedEmbeddings++;
+            console.error(`❌ Impossibile generare embedding per il chunk ${j + 1} nella pagina ${i + 1}`);
+          }
+        } catch (error) {
+          failedEmbeddings++;
+          console.error(`❌ Errore durante la generazione dell'embedding per il chunk ${j + 1} nella pagina ${i + 1}:`, error.message);
         }
       }
     }
 
+    // Log riassuntivo finale
     console.log(
-      `\n🔄 Totale record vettoriali creati: ${vectorRecords.length}`
+      `\n📊 Riepilogo elaborazione PDF:
+      - Pagine totali: ${data.pages.length}
+      - Chunks totali: ${totalChunks}
+      - Embedding generati con successo: ${successfulEmbeddings}
+      - Embedding falliti: ${failedEmbeddings}
+      - Record vettoriali creati: ${vectorRecords.length}`
     );
 
     // Inserisci i record vettoriali in Qdrant se ce ne sono
@@ -255,7 +269,7 @@ export async function processPDFForOrganization(filePath, organizationId) {
       const result = await insertDocuments(vectorRecords, organizationId);
       if (result) {
         console.log(
-          "✅ Tutti i record sono stati inseriti correttamente in Qdrant"
+          "✅ I record sono stati inseriti correttamente in Qdrant"
         );
       } else {
         console.error(

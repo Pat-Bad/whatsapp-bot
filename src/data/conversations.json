@@ -419,10 +419,106 @@
         "direction": "sent",
         "content": "Non posso saperlo! Non ho accesso alla tua posizione attuale. Per trovare la pizzeria più vicina, puoi:\n\n*   **Cercare su Google Maps:** Apri Google Maps e cerca \"pizzeria\".\n*   **Usare Yelp o TripAdvisor:** Queste app ti mostreranno le pizzerie nelle vicinanze e le recensioni.\n*   **Chiedere a un assistente vocale:** Ad esempio, \"Ehi Siri, trova una pizzeria vicino a me\".\n",
         "timestamp": "2025-05-15T22:31:55.237Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Non scrivi da un po'. Se hai bisogno di assistenza, sono qui per aiutarti!",
+        "timestamp": "2025-05-16T11:39:11.108Z",
+        "automatic": true
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-16T13:18:22.092Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Dimmi pure cosa ti serve. 😊\n",
+        "timestamp": "2025-05-16T13:18:23.896Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-16T13:20:52.735Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Il Ristorante Bella Italia si trova in Via Roma, 12 a Milano. Puoi contattarli al numero 02-9876543 o via email a prenotazioni@bellaitalia.it per informazioni o prenotazioni. Sono aperti tutti i giorni dalle 12:00 alle 15:00 e dalle 19:00 alle 23:00. Offrono cucina italiana e mediterranea, con specialità come pasta fatta in casa, pizza napoletana e pesce fresco. Organizzano anche eventi speciali. Il menu completo è disponibile online su www.bellaitalia.it. Offrono anche consegna a domicilio tramite Glovo e Deliveroo. C'è un parcheggio disponibile in zona e la fermata della metro più vicina è \"Duomo\" (M1, M3).\n",
+        "timestamp": "2025-05-16T13:20:54.973Z"
+      },
+      {
+        "direction": "received",
+        "content": "A che ora apre il ristorante?",
+        "timestamp": "2025-05-16T13:21:34.654Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Il Ristorante \"Bella Italia\" è aperto dalle 12:00 alle 15:00 e dalle 19:00 alle 23:00, dal Lunedì alla Domenica.\n",
+        "timestamp": "2025-05-16T13:21:36.418Z"
+      },
+      {
+        "direction": "received",
+        "content": "E come faccio a prenotare un tavolo per 10 persone per lunedì alle 15?",
+        "timestamp": "2025-05-16T13:22:07.987Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Per prenotare un tavolo per 10 persone al Ristorante \"Bella Italia\" lunedì alle 15:00, puoi:\n\n1.  **Telefonare:** al numero 02-9876543.\n2.  **Inviare una email:** a prenotazioni@bellaitalia.it.\n\nConsidera che il ristorante è aperto dalle 12:00 alle 15:00, quindi l'orario dovrebbe essere disponibile. Si consiglia la prenotazione, specialmente per gruppi numerosi.\n",
+        "timestamp": "2025-05-16T13:22:10.201Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-16T13:28:27.812Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Il Ristorante \"Bella Italia\" si trova in Via Roma, 12 a Milano. Puoi consultare il menu completo sul sito www.bellaitalia.it. Offrono consegna a domicilio tramite Glovo e Deliveroo. Per prenotazioni o informazioni, puoi chiamare lo 02-9876543 o scrivere a prenotazioni@bellaitalia.it. Sono aperti tutti i giorni dalle 12:00 alle 15:00 e dalle 19:00 alle 23:00.\n",
+        "timestamp": "2025-05-16T13:28:29.946Z"
+      },
+      {
+        "direction": "received",
+        "content": "Come posso fare per prenotare per mercoledì? Sarebbe aperto per le 19?",
+        "timestamp": "2025-05-16T13:28:55.640Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Per prenotare al Ristorante Bella Italia puoi:\n\n*   Telefonare al numero 02-9876543.\n*   Inviare una email a prenotazioni@bellaitalia.it.\n\nIl ristorante è aperto Mercoledì alle 19:00. Si consiglia la prenotazione, soprattutto per il fine settimana.\n",
+        "timestamp": "2025-05-16T13:28:57.751Z"
+      },
+      {
+        "direction": "received",
+        "content": "Dove si trova il ristorante?",
+        "timestamp": "2025-05-16T13:29:16.335Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Il ristorante \"Bella Italia\" si trova in Via Roma, 12, 20100 Milano, Italia. La fermata della metropolitana più vicina è \"Duomo\" (M1, M3).\n",
+        "timestamp": "2025-05-16T13:29:18.121Z"
+      },
+      {
+        "direction": "received",
+        "content": "Quindi posso arrivarci in auto?",
+        "timestamp": "2025-05-16T13:29:30.680Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Sì, è possibile arrivare in auto. Il ristorante \"Bella Italia\" ha parcheggio disponibile in zona.\n",
+        "timestamp": "2025-05-16T13:29:32.288Z"
+      },
+      {
+        "direction": "received",
+        "content": "Ciao",
+        "timestamp": "2025-05-16T13:47:24.705Z"
+      },
+      {
+        "direction": "sent",
+        "content": "Ciao! Dimmi pure cosa ti serve.\n",
+        "timestamp": "2025-05-16T13:47:26.221Z"
       }
     ],
     "created": "2025-05-11T20:26:46.355Z",
-    "lastActivity": "2025-05-15T22:31:52.943Z",
+    "lastActivity": "2025-05-16T13:47:24.705Z",
     "status": "active",
     "inactivityMessageSent": false,
     "closed": false

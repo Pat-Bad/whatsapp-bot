@@ -77,6 +77,8 @@ export async function getQdrantClient() {
             optimizers_config: {
               default_segment_number: 2, // Ridotto per migliorare compatibilità con Windows
               max_segment_size: 20000, // Ridotto per evitare problemi di memoria
+              indexing_threshold: 100, // MODIFICATO: Ridotto per permettere l'indicizzazione con meno punti
+              flush_interval_sec: 5
             },
             hnsw_config: {
               m: 16, // Parametro di connettività HNSW
@@ -86,6 +88,17 @@ export async function getQdrantClient() {
             on_disk_payload: true, // Ottimizzazione per dataset grandi, payload su disco
           });
           console.log(`✅ Collezione "${collectionName}" creata con successo`);
+          
+          // Crea indice per il campo organizationId
+          try {
+            await client.createPayloadIndex(collectionName, {
+              field_name: "organizationId",
+              field_schema: "keyword"
+            });
+            console.log("✅ Indice per organizationId creato con successo");
+          } catch (indexError) {
+            console.error(`❌ Errore nella creazione dell'indice: ${indexError.message}`);
+          }
         } catch (createError) {
           console.error(`❌ Errore nella creazione della collezione: ${createError.message}`);
           // Continua anche se la creazione fallisce, potrebbe essere un errore temporaneo
@@ -93,6 +106,38 @@ export async function getQdrantClient() {
         }
       } else {
         console.log(`ℹ️ Collezione "${collectionName}" già esistente`);
+        
+        // Verifica e crea indice per organizationId se non esiste
+        try {
+          const collectionInfo = await client.getCollection(collectionName);
+          
+          // Se non c'è payload_schema o non c'è l'indice organizationId, crealo
+          if (!collectionInfo.payload_schema || !collectionInfo.payload_schema.organizationId) {
+            await client.createPayloadIndex(collectionName, {
+              field_name: "organizationId",
+              field_schema: "keyword"
+            });
+            console.log("✅ Indice per organizationId creato con successo");
+          }
+          
+          // Verifica se è necessario aggiornare le impostazioni di ottimizzazione
+          const currentConfig = collectionInfo.config?.optimizer_config;
+          if (currentConfig && currentConfig.indexing_threshold > 100) {
+            try {
+              // Aggiorna la configurazione dell'optimizer per migliorare l'indicizzazione
+              await client.updateCollection(collectionName, {
+                optimizers_config: {
+                  indexing_threshold: 100 // Ridotto per attivare l'indicizzazione con meno punti
+                }
+              });
+              console.log("✅ Configurazione optimizer aggiornata: indexing_threshold ridotto a 100");
+            } catch (updateError) {
+              console.error(`❌ Errore nell'aggiornamento della configurazione: ${updateError.message}`);
+            }
+          }
+        } catch (indexError) {
+          console.error(`❌ Errore nella verifica/creazione dell'indice: ${indexError.message}`);
+        }
       }
 
       // Verifica e log della configurazione
@@ -200,31 +245,45 @@ export async function insertDocuments(documents, organizationId) {
       };
     });
 
-    // Log per debugging
+    // Log di inizio operazione
     console.log(
-      `Tentativo di inserimento di ${points.length} documenti per organizationId: ${organizationId}`
+      `🔄 Inserimento di ${points.length} documenti per organizationId: ${organizationId}`
     );
     
+    // Stampa solo un esempio invece dell'intero documento
     if (points.length > 0) {
-      console.log("Esempio punto:", JSON.stringify(points[0], null, 2));
+      const examplePoint = {...points[0]};
+      if (examplePoint.vector && Array.isArray(examplePoint.vector)) {
+        examplePoint.vector = `[...Array di ${examplePoint.vector.length} dimensioni]`;
+      }
+      console.log("Esempio struttura punto:", JSON.stringify(examplePoint, null, 2));
     }
 
     // Riduco dimensione del batch e aggiungo ritardo tra batch per evitare rate limiting
     const BATCH_SIZE = 5; // Dimensione più piccola per evitare payload troppo grandi
     let successCount = 0;
     let errorCount = 0;
+    const totalBatches = Math.ceil(points.length / BATCH_SIZE);
+
+    // Visualizza progresso solo per batch significativi
+    const logProgress = totalBatches > 5;
+    const progressInterval = Math.max(1, Math.floor(totalBatches / 5)); // Log ogni 20% circa
 
     for (let i = 0; i < points.length; i += BATCH_SIZE) {
       try {
         const batch = points.slice(i, i + BATCH_SIZE);
+        const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+        
         await client.upsert("documenti", { points: batch, wait: true });
         
         successCount += batch.length;
-        console.log(
-          `✅ Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(
-            points.length / BATCH_SIZE
-          )} inserito (${batch.length} punti)`
-        );
+        
+        // Log di progresso solo per alcuni batch o all'inizio/fine
+        if (!logProgress || batchNumber % progressInterval === 0 || batchNumber === 1 || batchNumber === totalBatches) {
+          console.log(
+            `✅ Batch ${batchNumber}/${totalBatches} inserito (${batch.length} punti)`
+          );
+        }
         
         // Aggiungo un piccolo ritardo tra i batch per evitare rate limiting
         if (i + BATCH_SIZE < points.length) {
@@ -237,12 +296,14 @@ export async function insertDocuments(documents, organizationId) {
           batchError.message
         );
         
-        if (batchError.response) {
+        // Stampa dettagli solo per il primo errore
+        if (errorCount <= BATCH_SIZE && batchError.response) {
           console.error("Dettagli errore:", batchError.response.data);
         }
       }
     }
 
+    // Log di completamento
     console.log(
       `✅ Completato: inseriti ${successCount}/${points.length} documenti, ${errorCount} falliti`
     );
@@ -296,7 +357,6 @@ export async function searchDocumentsForUser(query, organizationId, limit = 5) {
 
     const normalizedId = normalizeOrganizationId(organizationId);
     console.log(`🔍 Ricerca documenti per organizationId: ${normalizedId}`);
-    console.log(`🔍 Dimensione vettore query: ${query.length}`);
 
     try {
       // Esegue la ricerca semantica
@@ -322,11 +382,12 @@ export async function searchDocumentsForUser(query, organizationId, limit = 5) {
         return [];
       }
 
-      console.log(`✅ Trovati ${searchResults.length} risultati`);
-      
-      // Stampa dettagli per debug
+      // Log solo se ci sono risultati utili
       if (searchResults.length > 0) {
-        console.log(`🔍 Primo risultato - score: ${searchResults[0].score}`);
+        console.log(`✅ Trovati ${searchResults.length} risultati per la ricerca`);
+        console.log(`🔍 Score del miglior risultato: ${searchResults[0].score.toFixed(4)}`);
+      } else {
+        console.log(`ℹ️ Nessun risultato trovato per la ricerca`);
       }
       
       return searchResults;
@@ -382,10 +443,8 @@ export async function getDocumentsForUser(organizationId) {
       throw new Error("Credenziali Qdrant mancanti");
     }
 
+    // Strategia 1: Chiamata HTTP diretta con scroll
     try {
-      // Approccio diretto usando fetch per recuperare i documenti
-      console.log("🔄 Tentativo con chiamata HTTP diretta...");
-      
       // Configurazione della richiesta
       const requestBody = {
         filter: {
@@ -422,73 +481,74 @@ export async function getDocumentsForUser(organizationId) {
       
       if (data.result && data.result.points && data.result.points.length > 0) {
         allDocuments = data.result.points;
-        console.log(`✅ Recuperati ${allDocuments.length} documenti con chiamata HTTP diretta`);
-      } else {
-        console.log("ℹ️ Nessun documento trovato con chiamata HTTP diretta");
-        
-        // Prova con i metodi precedenti se la chiamata diretta non ha prodotto risultati
-        try {
-          // Usa un metodo più semplice che sappiamo funzionare: search con limite alto
-          const response = await client.search("documenti", {
-            vector: Array(768).fill(0), // Vettore neutro di 768 dimensioni
-            filter: {
-              must: [
-                {
-                  key: "organizationId",
-                  match: {
-                    value: normalizedId,
-                  },
-                },
-              ],
-            },
-            limit: 100, // Limite alto ma non troppo
-            with_payload: true,
-            with_vectors: false,
-            score_threshold: 0.0, // Accetta tutti i risultati
-          });
-          
-          if (response && response.length > 0) {
-            allDocuments = response;
-            console.log(`✅ Recuperati ${response.length} documenti in totale`);
-          } else {
-            console.log(`ℹ️ Nessun documento trovato per ${normalizedId}`);
-          }
-        } catch (searchError) {
-          console.error(`❌ Errore nella ricerca: ${searchError.message}`);
-        }
+        console.log(`✅ Recuperati ${allDocuments.length} documenti`);
+        return allDocuments;
       }
+      console.log("ℹ️ Nessun documento trovato con il metodo primario, provo metodi alternativi");
     } catch (directError) {
-      console.error(`❌ Errore nella chiamata HTTP diretta: ${directError.message}`);
-      
-      // Prova con scroll
-      try {
-        console.log("🔄 Tentativo alternativo usando scroll...");
-        const scrollResponse = await client.scroll("documenti", {
-          filter: {
-            must: [
-              {
-                key: "organizationId",
-                match: {
-                  value: normalizedId,
-                },
-              },
-            ],
-          },
-          limit: 20,
-          with_payload: true,
-          with_vectors: false,
-        });
-        
-        if (scrollResponse.points && scrollResponse.points.length > 0) {
-          allDocuments = scrollResponse.points;
-          console.log(`✅ Recuperati ${allDocuments.length} documenti con metodo alternativo`);
-        }
-      } catch (scrollError) {
-        console.error(`❌ Anche il metodo alternativo è fallito: ${scrollError.message}`);
-      }
+      console.log(`ℹ️ Metodo primario non riuscito, provo metodi alternativi: ${directError.message}`);
     }
 
-    return allDocuments;
+    // Strategia 2: Ricerca con vettore neutro
+    try {
+      // Usa un metodo più semplice che sappiamo funzionare: search con limite alto
+      const response = await client.search("documenti", {
+        vector: Array(768).fill(0), // Vettore neutro di 768 dimensioni
+        filter: {
+          must: [
+            {
+              key: "organizationId",
+              match: {
+                value: normalizedId,
+              },
+            },
+          ],
+        },
+        limit: 100, // Limite alto ma non troppo
+        with_payload: true,
+        with_vectors: false,
+        score_threshold: 0.0, // Accetta tutti i risultati
+      });
+      
+      if (response && response.length > 0) {
+        allDocuments = response;
+        console.log(`✅ Recuperati ${response.length} documenti con metodo alternativo 1`);
+        return allDocuments;
+      }
+    } catch (searchError) {
+      console.log(`ℹ️ Metodo alternativo 1 non riuscito: ${searchError.message}`);
+    }
+
+    // Strategia 3: Scroll tramite client
+    try {
+      const scrollResponse = await client.scroll("documenti", {
+        filter: {
+          must: [
+            {
+              key: "organizationId",
+              match: {
+                value: normalizedId,
+              },
+            },
+          ],
+        },
+        limit: 20,
+        with_payload: true,
+        with_vectors: false,
+      });
+      
+      if (scrollResponse.points && scrollResponse.points.length > 0) {
+        allDocuments = scrollResponse.points;
+        console.log(`✅ Recuperati ${allDocuments.length} documenti con metodo alternativo 2`);
+        return allDocuments;
+      }
+    } catch (scrollError) {
+      console.log(`ℹ️ Metodo alternativo 2 non riuscito: ${scrollError.message}`);
+    }
+
+    // Se siamo qui, non abbiamo trovato documenti
+    console.log(`ℹ️ Nessun documento trovato per ${normalizedId} con nessun metodo`);
+    return [];
   } catch (error) {
     console.error(
       "❌ Errore durante il recupero dei documenti:",
