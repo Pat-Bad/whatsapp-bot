@@ -1,66 +1,178 @@
-# React + Vite
+# WHAIx2 - Bot WhatsApp con Intelligenza Artificiale
 
-This template provides a minimal setup to get React working in Vite with HMR and
-some ESLint rules.
+![Versione](https://img.shields.io/badge/versione-1.0.0-blue)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+![Vite](https://img.shields.io/badge/Vite-4-646CFF?logo=vite)
+![Twilio](https://img.shields.io/badge/Twilio-API-F22F46?logo=twilio)
+![Google Gemini](https://img.shields.io/badge/Google-Gemini%20AI-4285F4?logo=google)
 
-Currently, two official plugins are available:
+Un bot WhatsApp avanzato che utilizza l'intelligenza artificiale di Google Gemini per generare risposte automatiche alle conversazioni. Integrazione completa con Twilio per la gestione dei messaggi WhatsApp e interfaccia web per monitorare e gestire le conversazioni.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react)
-  uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc)
-  uses [SWC](https://swc.rs/) for Fast Refresh
+## 📑 Indice
 
-## Expanding the ESLint configuration
+- [Panoramica](#panoramica)
+- [Funzionalità](#funzionalità)
+- [Tecnologie](#tecnologie)
+- [Prerequisiti](#prerequisiti)
+- [Installazione](#installazione)
+- [Configurazione](#configurazione)
+- [Utilizzo](#utilizzo)
+- [Architettura](#architettura)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+- [Workflow](#workflow)
+- [Sviluppo](#sviluppo)
+- [Licenza](#licenza)
 
-If you are developing a production application, we recommend using TypeScript
-with type-aware lint rules enabled. Check out the
-[TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts)
-for information on how to integrate TypeScript and
-[`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🔍 Panoramica
 
-## Logica dell'Applicazione WhatsApp Bot
+WHAIx2 è un sistema completo per automatizzare e gestire conversazioni WhatsApp utilizzando intelligenza artificiale avanzata. Il sistema riceve messaggi tramite webhook Twilio, li elabora con modelli AI di Google Gemini e genera risposte automatiche contestuali.
 
-### Backend (server.mjs)
+## ✨ Funzionalità
 
-Il file `server.mjs` implementa un server Express che gestisce le interazioni
-con WhatsApp tramite Twilio. Ecco le principali funzionalità:
+- **Integrazione WhatsApp**: Ricezione e invio di messaggi WhatsApp tramite API Twilio
+- **Risposte AI**: Generazione automatica di risposte utilizzando Google Gemini AI
+- **Archiviazione Conversazioni**: Memorizzazione e gestione di tutte le conversazioni
+- **Dashboard Web**: Interfaccia di amministrazione per monitorare e gestire le conversazioni
+- **Autenticazione**: Sistema di login per proteggere l'accesso all'interfaccia amministrativa
+- **Ricerca Avanzata**: Utilizzo di RAG (Retrieval Augmented Generation) per risposte contestualizzate
+- **Personalizzazione**: Possibilità di inviare messaggi personalizzati tramite dashboard
 
-- **Gestione Webhook**: Riceve messaggi WhatsApp attraverso webhook Twilio
-- **Archiviazione Conversazioni**: Salva tutte le conversazioni in memoria e su
-  file JSON
-- **Integrazione AI**: Genera risposte automatiche utilizzando Gemini AI
+## 🛠️ Tecnologie
+
+- **Frontend**: React, Vite, CSS moderno
+- **Backend**: Node.js, Express
+- **AI**: Google Gemini API
+- **Messaging**: Twilio WhatsApp API
+- **Vector DB**: Qdrant per funzionalità RAG
+- **Tunneling**: Ngrok per esposizione webhook
+
+## 📋 Prerequisiti
+
+- Node.js (v16+)
+- Account Twilio con API WhatsApp abilitata
+- Chiave API Google Gemini
+- Ngrok per lo sviluppo locale
+
+## 📥 Installazione
+
+```bash
+# Clona il repository
+git clone https://github.com/Pat-Bad/whatsapp-bot.git
+cd whatsapp-bot
+
+# Installa le dipendenze
+npm install
+```
+
+## ⚙️ Configurazione
+
+Crea un file `.env` nella directory principale con le seguenti variabili:
+
+```env
+# Twilio
+TWILIO_ACCOUNT_SID=il_tuo_sid
+TWILIO_AUTH_TOKEN=il_tuo_token
+TWILIO_PHONE_NUMBER=il_tuo_numero_whatsapp
+
+# Server
+PORT=3000
+
+# UI Auth
+VITE_APP_USR_UI=admin
+VITE_APP_PWD_UI=password
+
+# Google Gemini AI
+GEMINI_API_KEY=la_tua_chiave_api_gemini
+```
+
+## 🚀 Utilizzo
+
+### Avvio del server
+
+```bash
+# Avvio in modalità sviluppo
+npm run dev
+
+# Oppure in produzione
+npm run build
+npm run start
+```
+
+### Configurazione webhook Twilio
+
+1. Avvia Ngrok per esporre il server locale: `./ngrok http 3000`
+2. Configura il webhook Twilio WhatsApp con l'URL Ngrok: `https://tuo-tunnel.ngrok.io/webhook`
+
+## 🏗️ Architettura
+
+### Backend
+
+Il backend è costruito su Node.js con Express e gestisce:
+
+- **Webhook Twilio**: Ricezione messaggi WhatsApp (`/webhook`)
+- **Elaborazione AI**: Integrazione con Google Gemini per generare risposte
+- **Archiviazione**: Salvataggio conversazioni in memoria e su file JSON
 - **API RESTful**:
-  - `GET /api/conversations` - Ottiene tutte le conversazioni
-  - `GET /api/conversations/:phone` - Ottiene una conversazione specifica
-  - `POST /api/send` - Invia messaggi personalizzati tramite Twilio
+  - `GET /api/conversations`: Lista di tutte le conversazioni
+  - `GET /api/conversations/:phone`: Dettagli conversazione specifica
+  - `POST /api/send`: Invio messaggi personalizzati
+  - `POST /api/login`: Autenticazione dashboard
 
-Il server mantiene le conversazioni organizzate per numero di telefono, salvando
-sia i messaggi ricevuti che quelli inviati con relativi timestamp.
+### Frontend
 
-### Integrazione AI (gemini.mjs)
+L'interfaccia React include:
 
-Il file `gemini.mjs` gestisce l'integrazione con Google Gemini AI:
+- **Autenticazione**: Schermata di login per accedere alla dashboard
+- **Dashboard**: Visualizzazione e gestione di tutte le conversazioni
+- **Dettaglio Conversazione**: Visualizzazione cronologia messaggi
+- **Invio Messaggi**: Interfaccia per inviare messaggi personalizzati
 
-- Utilizza la libreria ufficiale `@google/genai` per comunicare con l'API Gemini
-- Implementa la funzione `generateAIResponse` che accetta un prompt e
-  restituisce la risposta generata dall'AI
-- Utilizza il modello `gemini-2.0-flash` per generare risposte rapide
-- Include funzionalità di test tramite console per interagire direttamente con
-  l'AI
+## 🔄 Workflow
 
-L'integrazione richiede una chiave API Gemini valida configurata nelle variabili
-d'ambiente.
+1. **Ricezione Messaggio**:
+   - Utente invia messaggio via WhatsApp
+   - Twilio inoltra il messaggio al webhook dell'applicazione
 
-Crea file .env con variabili
+2. **Elaborazione**:
+   - Il server riceve il messaggio e lo salva
+   - Il contesto della conversazione viene recuperato
+   - La query viene elaborata tramite sistema RAG se necessario
 
-TWILIO_ACCOUNT_SID= TWILIO_AUTH_TOKEN= TWILIO_PHONE_NUMBER=
+3. **Generazione Risposta**:
+   - Il messaggio e il contesto vengono inviati a Google Gemini
+   - L'AI genera una risposta appropriata
 
-(classica port 3000 per il server) PORT=
+4. **Invio Risposta**:
+   - La risposta viene inviata all'utente tramite Twilio
+   - La conversazione viene aggiornata con la nuova risposta
 
-(credenziali se vuoi usare UI ) VITE_APP_USR_UI VITE_APP_PWD_UI
+5. **Monitoraggio**:
+   - Amministratori possono visualizzare tutte le conversazioni nella dashboard
+   - Possibilità di intervenire manualmente quando necessario
 
-(gratuita per la maggior parte. Serve per far funzionare chiamate gemini)
+## 👨‍💻 Sviluppo
 
-GEMINI_API_KEY
+### Struttura del progetto
 
----
+```
+whatsapp-bot/
+├── src/
+│   ├── assets/           # Risorse statiche
+│   ├── backend/          # Server e logica backend
+│   │   ├── rag/          # Sistema Retrieval Augmented Generation
+│   │   └── temp/         # File temporanei
+│   ├── components/       # Componenti React
+│   └── data/             # Dati e configurazioni
+├── .env                  # Variabili d'ambiente (da creare)
+└── package.json          # Dipendenze e script
+```
+
+### Estensione
+
+Per estendere le funzionalità del bot:
+
+1. Modifica `src/backend/gemini.mjs` per personalizzare il comportamento AI
+2. Aggiorna `src/backend/rag/pharsingfile.mjs` per migliorare il retrieval
+3. Aggiungi nuovi endpoint in `src/backend/server.mjs`
+4. Estendi l'interfaccia utente in `src/components/Manager.jsx`

@@ -214,7 +214,7 @@ const sendAutomaticMessage = async (from) => {
 
   try {
     // Usa il numero ufficiale della sandbox WhatsApp di Twilio come mittente
-    const sandboxNumber = "whatsapp:+14155238886"; // Numero ufficiale della Sandbox WhatsApp di Twilio
+    const sandboxNumber = process.env.TWILIO_PHONE_NUMBER; // Numero ufficiale della Sandbox WhatsApp di Twilio
     await sendTwilioMessage(from, automaticMessage, sandboxNumber);
 
     if (!conversations[from]) {
